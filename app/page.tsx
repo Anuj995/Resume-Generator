@@ -18,13 +18,19 @@ export default function HomePage() {
         Enter your achievements, skills, education and experience. Select the job role you want, and generate a resume based on your information.
       </p>
 
-      {/* Main Action Button */}
-      <div className="mb-12">
+      {/* Main Action Buttons */}
+      <div className="mb-12 flex flex-wrap justify-center items-center gap-3">
         <Link
           href="/input"
           className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-md shadow-sm transition-colors text-base"
         >
           Start Creating Resume
+        </Link>
+        <Link
+          href="/templates"
+          className="inline-block bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium px-5 py-3 rounded-md shadow-xs transition-colors text-base"
+        >
+          Explore ATS Templates
         </Link>
       </div>
 
@@ -33,12 +39,12 @@ export default function HomePage() {
         <h2 className="text-lg font-semibold text-gray-800 mb-6">
           How It Works
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 text-left">
           <div className="bg-white p-5 border border-gray-200 rounded-lg">
             <div className="text-blue-600 font-bold text-sm mb-1">Step 1</div>
             <h3 className="font-semibold text-gray-900 mb-1">Enter Information</h3>
             <p className="text-sm text-gray-600">
-              Paste your raw career details, projects, education, and achievements.
+              Upload existing PDF resume or paste your career details and skills.
             </p>
           </div>
 
@@ -46,15 +52,23 @@ export default function HomePage() {
             <div className="text-blue-600 font-bold text-sm mb-1">Step 2</div>
             <h3 className="font-semibold text-gray-900 mb-1">Select Target Role</h3>
             <p className="text-sm text-gray-600">
-              Pick the job role you are applying for to highlight relevant skills.
+              Pick the target role to emphasize relevant skills and achievements.
             </p>
           </div>
 
           <div className="bg-white p-5 border border-gray-200 rounded-lg">
             <div className="text-blue-600 font-bold text-sm mb-1">Step 3</div>
-            <h3 className="font-semibold text-gray-900 mb-1">Generate Resume</h3>
+            <h3 className="font-semibold text-gray-900 mb-1">Choose ATS Template</h3>
             <p className="text-sm text-gray-600">
-              Review organized sections, edit content, and preview your final resume.
+              Pick from 5 parser-verified, recruiter-approved ATS templates.
+            </p>
+          </div>
+
+          <div className="bg-white p-5 border border-gray-200 rounded-lg">
+            <div className="text-blue-600 font-bold text-sm mb-1">Step 4</div>
+            <h3 className="font-semibold text-gray-900 mb-1">Generate & Download</h3>
+            <p className="text-sm text-gray-600">
+              Edit with live preview and download a clean PDF ready for applications.
             </p>
           </div>
         </div>

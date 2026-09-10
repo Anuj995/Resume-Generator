@@ -51,4 +51,6 @@ export interface ResumeData {
   skills: string[];
   certifications: Certification[];
   achievements: Achievement[];
+  templateId?: string;
 }
+

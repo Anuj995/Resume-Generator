@@ -20,6 +20,9 @@ export default function Navbar() {
           <Link href="/role" className="hover:text-blue-600">
             Select Role
           </Link>
+          <Link href="/templates" className="hover:text-blue-600">
+            Templates
+          </Link>
         </div>
       </div>
     </nav>

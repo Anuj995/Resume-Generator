@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ResumeData, Education, Experience, Project, Certification, Achievement } from "@/types/resume";
 import { extractResumeData } from "@/lib/resumeParser";
+import { RESUME_TEMPLATES, DEFAULT_TEMPLATE_ID } from "@/data/templateData";
 import ResumePreview from "@/components/ResumePreview";
 
 export default function EditorPage() {
@@ -12,15 +13,22 @@ export default function EditorPage() {
 
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [skillsInput, setSkillsInput] = useState("");
+  const [templateId, setTemplateId] = useState<string>(DEFAULT_TEMPLATE_ID);
 
   // Load resume data on mount
   useEffect(() => {
+    const savedTemplate = localStorage.getItem("resume_template") || DEFAULT_TEMPLATE_ID;
+    setTemplateId(savedTemplate);
+
     const savedData = localStorage.getItem("resume_data");
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
         setResumeData(parsed);
         setSkillsInput(parsed.skills ? parsed.skills.join(", ") : "");
+        if (parsed.templateId) {
+          setTemplateId(parsed.templateId);
+        }
         return;
       } catch (e) {
         console.error("Error loading resume data", e);
@@ -30,10 +38,22 @@ export default function EditorPage() {
     // Fallback if not yet organized
     const savedText = localStorage.getItem("resume_raw_text") || "";
     const savedRole = localStorage.getItem("resume_target_role") || "";
-    const generated = extractResumeData(savedText, savedRole);
+    const savedFileName = localStorage.getItem("resume_file_name") || "";
+    const generated = extractResumeData(savedText, savedRole, savedFileName);
+    generated.templateId = savedTemplate;
     setResumeData(generated);
     setSkillsInput(generated.skills.join(", "));
   }, []);
+
+  const handleTemplateChange = (id: string) => {
+    setTemplateId(id);
+    localStorage.setItem("resume_template", id);
+    if (resumeData) {
+      const updated = { ...resumeData, templateId: id };
+      saveToStorage(updated);
+    }
+  };
+
 
   // Save changes to localStorage whenever resumeData changes
   const saveToStorage = (updated: ResumeData) => {
@@ -184,6 +204,12 @@ export default function EditorPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href="/templates"
+            className="text-sm border border-gray-300 bg-white hover:bg-gray-50 px-3 py-2 rounded-md font-medium text-gray-700"
+          >
+            Change Template
+          </Link>
           <Link
             href="/organize"
             className="text-sm border border-gray-300 bg-white hover:bg-gray-50 px-3 py-2 rounded-md font-medium text-gray-700"
@@ -566,13 +592,50 @@ export default function EditorPage() {
 
         {/* RIGHT COLUMN: Live Resume Preview */}
         <div className="lg:sticky lg:top-20">
+          {/* Template Quick Switcher Bar */}
+          <div className="bg-white border border-gray-200 rounded-lg p-3 mb-3 shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="text-xs font-bold text-gray-800">
+                  Template: <span className="text-blue-600 font-semibold">{RESUME_TEMPLATES.find((t) => t.id === templateId)?.name}</span>
+                </span>
+              </div>
+              <Link
+                href="/templates"
+                className="text-[11px] text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              >
+                Browse All Templates &rarr;
+              </Link>
+            </div>
+
+            {/* Quick Template Switch Buttons */}
+            <div className="grid grid-cols-5 gap-1.5">
+              {RESUME_TEMPLATES.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => handleTemplateChange(tpl.id)}
+                  title={`${tpl.name} - ${tpl.description}`}
+                  className={`py-1.5 px-1 rounded text-[11px] font-medium truncate transition-all text-center ${
+                    templateId === tpl.id
+                      ? "bg-blue-600 text-white shadow-xs font-semibold"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {tpl.name.split(" ")[0]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">
               Live Resume Preview
             </span>
             <span className="text-[11px] text-gray-400">Updates as you edit</span>
           </div>
-          <ResumePreview data={resumeData} />
+          <ResumePreview data={resumeData} templateId={templateId} />
         </div>
       </div>
     </div>

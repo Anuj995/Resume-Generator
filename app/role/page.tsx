@@ -33,11 +33,13 @@ export default function RolePage() {
 
     // Save to localStorage
     localStorage.setItem("resume_target_role", selectedRole);
+    localStorage.removeItem("resume_data");
     setErrorMessage("");
 
-    // In future task, this will navigate to /organize. For now, alert or redirect to /organize
-    router.push("/organize");
+    // Navigate to /templates
+    router.push("/templates");
   };
+
 
   return (
     <div className="max-w-xl mx-auto py-8">
