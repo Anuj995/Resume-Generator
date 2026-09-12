@@ -32,6 +32,40 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
     return lines.length > 0 ? lines : [text];
   };
 
+  // ── Helpers: skip items whose content is empty or still a default placeholder ──
+  const PLACEHOLDER_PATTERNS = [
+    /^new role \/ position$/i,
+    /^company name$/i,
+    /^duration$/i,
+    /^brief description/i,
+    /^new project$/i,
+    /^project description/i,
+    /^technologies used$/i,
+    /^degree \/ diploma$/i,
+    /^college \/ university name$/i,
+    /^graduation year$/i,
+    /^certification name$/i,
+    /^issuing organization$/i,
+    /^describe your award/i,
+    /^achievement details$/i,
+  ];
+
+  const isPlaceholder = (val: string) =>
+    !val || !val.trim() || PLACEHOLDER_PATTERNS.some((re) => re.test(val.trim()));
+
+  const filteredExperience = experience.filter(
+    (e) => !isPlaceholder(e.title) || !isPlaceholder(e.company) || !isPlaceholder(e.description)
+  );
+  const filteredProjects = projects.filter(
+    (p) => !isPlaceholder(p.title) || !isPlaceholder(p.description)
+  );
+  const filteredEducation = education.filter(
+    (e) => !isPlaceholder(e.degree) || !isPlaceholder(e.institution)
+  );
+  const filteredCertifications = certifications.filter((c) => !isPlaceholder(c.name));
+  const filteredAchievements = achievements.filter((a) => !isPlaceholder(a.description));
+  const filteredSkills = skills.filter((s) => s && s.trim().length > 0);
+
   /* ==========================================================================
      TEMPLATE 1: CLASSIC ATS (Traditional, Centered, Timeless)
      ========================================================================== */
@@ -70,25 +104,25 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Skills */}
-        {skills && skills.length > 0 && (
+        {filteredSkills && filteredSkills.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
               Technical Skills
             </h2>
             <p className="text-xs text-gray-800 leading-relaxed font-sans">
-              <strong>Core Competencies:</strong> {skills.join(", ")}
+              <strong>Core Competencies:</strong> {filteredSkills.join(", ")}
             </p>
           </section>
         )}
 
         {/* Experience */}
-        {experience && experience.length > 0 && (
+        {filteredExperience && filteredExperience.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
               Work Experience
             </h2>
             <div className="space-y-3">
-              {experience.map((exp, i) => (
+              {filteredExperience.map((exp, i) => (
                 <div key={exp.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline font-bold text-gray-900">
                     <span>
@@ -110,13 +144,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Projects */}
-        {projects && projects.length > 0 && (
+        {filteredProjects && filteredProjects.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
               Key Projects
             </h2>
             <div className="space-y-3">
-              {projects.map((proj, i) => (
+              {filteredProjects.map((proj, i) => (
                 <div key={proj.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline font-bold text-gray-900">
                     <span>{proj.title}</span>
@@ -140,13 +174,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Education */}
-        {education && education.length > 0 && (
+        {filteredEducation && filteredEducation.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
               Education
             </h2>
             <div className="space-y-1.5">
-              {education.map((edu, i) => (
+              {filteredEducation.map((edu, i) => (
                 <div key={edu.id || i} className="flex justify-between items-baseline text-xs">
                   <div>
                     <span className="font-bold text-gray-900">{edu.degree}</span>
@@ -160,13 +194,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Certifications */}
-        {certifications && certifications.length > 0 && (
+        {filteredCertifications && filteredCertifications.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
               Certifications
             </h2>
             <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-              {certifications.map((cert, i) => (
+              {filteredCertifications.map((cert, i) => (
                 <li key={cert.id || i}>
                   <span className="font-semibold text-gray-900">{cert.name}</span>
                   {cert.issuer && <span className="text-gray-600"> &mdash; {cert.issuer}</span>}
@@ -177,13 +211,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Achievements */}
-        {achievements && achievements.length > 0 && (
+        {filteredAchievements && filteredAchievements.length > 0 && (
           <section className="mb-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
               Honors & Achievements
             </h2>
             <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-              {achievements.map((ach, i) => (
+              {filteredAchievements.map((ach, i) => (
                 <li key={ach.id || i}>{ach.description}</li>
               ))}
             </ul>
@@ -234,14 +268,14 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Skills */}
-        {skills && skills.length > 0 && (
+        {filteredSkills && filteredSkills.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-2 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               Technical Skills
             </h2>
             <div className="flex flex-wrap gap-1.5 pl-3.5">
-              {skills.map((skill, i) => (
+              {filteredSkills.map((skill, i) => (
                 <span
                   key={i}
                   className="bg-blue-50 border border-blue-200 text-blue-900 font-medium px-2 py-0.5 rounded text-[11px]"
@@ -254,14 +288,14 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Experience */}
-        {experience && experience.length > 0 && (
+        {filteredExperience && filteredExperience.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-2 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               Work Experience
             </h2>
             <div className="space-y-3 pl-3.5">
-              {experience.map((exp, i) => (
+              {filteredExperience.map((exp, i) => (
                 <div key={exp.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline">
                     <span className="font-bold text-gray-900 text-sm">
@@ -286,14 +320,14 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Projects */}
-        {projects && projects.length > 0 && (
+        {filteredProjects && filteredProjects.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-2 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               Projects & Engineering Work
             </h2>
             <div className="space-y-3 pl-3.5">
-              {projects.map((proj, i) => (
+              {filteredProjects.map((proj, i) => (
                 <div key={proj.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline">
                     <span className="font-bold text-gray-900">{proj.title}</span>
@@ -317,14 +351,14 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Education */}
-        {education && education.length > 0 && (
+        {filteredEducation && filteredEducation.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-1.5 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               Education
             </h2>
             <div className="space-y-1.5 pl-3.5">
-              {education.map((edu, i) => (
+              {filteredEducation.map((edu, i) => (
                 <div key={edu.id || i} className="flex justify-between text-xs">
                   <div>
                     <span className="font-bold text-gray-900">{edu.degree}</span>
@@ -338,14 +372,14 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Certifications */}
-        {certifications && certifications.length > 0 && (
+        {filteredCertifications && filteredCertifications.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-1.5 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               Certifications
             </h2>
             <ul className="list-disc list-outside ml-7 text-xs text-gray-700 space-y-0.5">
-              {certifications.map((cert, i) => (
+              {filteredCertifications.map((cert, i) => (
                 <li key={cert.id || i}>
                   <span className="font-medium text-gray-900">{cert.name}</span>
                   {cert.issuer && <span className="text-gray-500"> ({cert.issuer})</span>}
@@ -356,14 +390,14 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Achievements */}
-        {achievements && achievements.length > 0 && (
+        {filteredAchievements && filteredAchievements.length > 0 && (
           <section className="mb-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-1.5 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               Achievements
             </h2>
             <ul className="list-disc list-outside ml-7 text-xs text-gray-700 space-y-0.5">
-              {achievements.map((ach, i) => (
+              {filteredAchievements.map((ach, i) => (
                 <li key={ach.id || i}>{ach.description}</li>
               ))}
             </ul>
@@ -418,13 +452,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Skills */}
-        {skills && skills.length > 0 && (
+        {filteredSkills && filteredSkills.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
               Core Competencies & Skills
             </h2>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs px-1 text-gray-800">
-              {skills.map((skill, i) => (
+              {filteredSkills.map((skill, i) => (
                 <div key={i} className="flex items-center gap-1.5">
                   <span className="text-teal-700 font-bold">&rsaquo;</span>
                   <span>{skill}</span>
@@ -435,13 +469,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Experience */}
-        {experience && experience.length > 0 && (
+        {filteredExperience && filteredExperience.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
               Professional Experience
             </h2>
             <div className="space-y-3 px-1">
-              {experience.map((exp, i) => (
+              {filteredExperience.map((exp, i) => (
                 <div key={exp.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline font-bold text-gray-900">
                     <span className="text-sm text-teal-950">{exp.title}</span>
@@ -464,13 +498,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Projects */}
-        {projects && projects.length > 0 && (
+        {filteredProjects && filteredProjects.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
               Key Initiatives & Projects
             </h2>
             <div className="space-y-3 px-1">
-              {projects.map((proj, i) => (
+              {filteredProjects.map((proj, i) => (
                 <div key={proj.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline">
                     <span className="font-bold text-gray-900">{proj.title}</span>
@@ -494,13 +528,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Education */}
-        {education && education.length > 0 && (
+        {filteredEducation && filteredEducation.length > 0 && (
           <section className="mb-4">
             <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
               Education & Credentials
             </h2>
             <div className="space-y-1.5 px-1">
-              {education.map((edu, i) => (
+              {filteredEducation.map((edu, i) => (
                 <div key={edu.id || i} className="flex justify-between text-xs">
                   <div>
                     <span className="font-bold text-gray-900">{edu.degree}</span>
@@ -514,15 +548,15 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Certifications & Achievements */}
-        {(certifications?.length > 0 || achievements?.length > 0) && (
+        {(filteredCertifications?.length > 0 || filteredAchievements?.length > 0) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-            {certifications && certifications.length > 0 && (
+            {filteredCertifications && filteredCertifications.length > 0 && (
               <section>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
                   Certifications
                 </h2>
                 <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-                  {certifications.map((cert, i) => (
+                  {filteredCertifications.map((cert, i) => (
                     <li key={cert.id || i}>
                       <span className="font-medium">{cert.name}</span>
                       {cert.issuer && <span className="text-gray-500"> ({cert.issuer})</span>}
@@ -532,13 +566,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
               </section>
             )}
 
-            {achievements && achievements.length > 0 && (
+            {filteredAchievements && filteredAchievements.length > 0 && (
               <section>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
                   Achievements
                 </h2>
                 <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-                  {achievements.map((ach, i) => (
+                  {filteredAchievements.map((ach, i) => (
                     <li key={ach.id || i}>{ach.description}</li>
                   ))}
                 </ul>
@@ -590,13 +624,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Skills */}
-        {skills && skills.length > 0 && (
+        {filteredSkills && filteredSkills.length > 0 && (
           <section className="mb-3">
             <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
               // Technical Stack
             </h2>
             <div className="text-xs text-gray-800 leading-normal">
-              {skills.map((skill, i) => (
+              {filteredSkills.map((skill, i) => (
                 <span
                   key={i}
                   className="inline-block bg-indigo-50 text-indigo-900 border border-indigo-100 px-1.5 py-0.2 rounded mr-1 mb-1 text-[11px] font-medium"
@@ -609,13 +643,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Experience */}
-        {experience && experience.length > 0 && (
+        {filteredExperience && filteredExperience.length > 0 && (
           <section className="mb-3">
             <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1.5 font-mono">
               // Experience
             </h2>
             <div className="space-y-2.5">
-              {experience.map((exp, i) => (
+              {filteredExperience.map((exp, i) => (
                 <div key={exp.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline">
                     <span className="font-bold text-gray-900">
@@ -637,13 +671,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Projects */}
-        {projects && projects.length > 0 && (
+        {filteredProjects && filteredProjects.length > 0 && (
           <section className="mb-3">
             <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1.5 font-mono">
               // Projects
             </h2>
             <div className="space-y-2">
-              {projects.map((proj, i) => (
+              {filteredProjects.map((proj, i) => (
                 <div key={proj.id || i} className="text-xs">
                   <div className="flex justify-between items-baseline">
                     <span className="font-bold text-gray-900">{proj.title}</span>
@@ -667,13 +701,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Education */}
-        {education && education.length > 0 && (
+        {filteredEducation && filteredEducation.length > 0 && (
           <section className="mb-3">
             <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
               // Education
             </h2>
             <div className="space-y-1">
-              {education.map((edu, i) => (
+              {filteredEducation.map((edu, i) => (
                 <div key={edu.id || i} className="flex justify-between text-xs">
                   <div>
                     <span className="font-bold text-gray-900">{edu.degree}</span>
@@ -687,15 +721,15 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         )}
 
         {/* Certifications & Achievements */}
-        {(certifications?.length > 0 || achievements?.length > 0) && (
+        {(filteredCertifications?.length > 0 || filteredAchievements?.length > 0) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {certifications && certifications.length > 0 && (
+            {filteredCertifications && filteredCertifications.length > 0 && (
               <section>
                 <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
                   // Certifications
                 </h2>
                 <ul className="list-disc list-outside ml-4 text-[11px] text-gray-700 space-y-0.5">
-                  {certifications.map((cert, i) => (
+                  {filteredCertifications.map((cert, i) => (
                     <li key={cert.id || i}>
                       {cert.name} {cert.issuer && <span className="text-gray-500">({cert.issuer})</span>}
                     </li>
@@ -704,13 +738,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
               </section>
             )}
 
-            {achievements && achievements.length > 0 && (
+            {filteredAchievements && filteredAchievements.length > 0 && (
               <section>
                 <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
                   // Achievements
                 </h2>
                 <ul className="list-disc list-outside ml-4 text-[11px] text-gray-700 space-y-0.5">
-                  {achievements.map((ach, i) => (
+                  {filteredAchievements.map((ach, i) => (
                     <li key={ach.id || i}>{ach.description}</li>
                   ))}
                 </ul>
@@ -759,25 +793,25 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {/* Skills */}
-      {skills && skills.length > 0 && (
+      {filteredSkills && filteredSkills.length > 0 && (
         <section className="mb-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
             Skills & Expertise
           </h2>
           <p className="text-xs text-gray-800 leading-relaxed">
-            {skills.join("  &bull;  ")}
+            {filteredSkills.join("  &bull;  ")}
           </p>
         </section>
       )}
 
       {/* Experience */}
-      {experience && experience.length > 0 && (
+      {filteredExperience && filteredExperience.length > 0 && (
         <section className="mb-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
             Experience
           </h2>
           <div className="space-y-3">
-            {experience.map((exp, i) => (
+            {filteredExperience.map((exp, i) => (
               <div key={exp.id || i} className="text-xs">
                 <div className="flex justify-between items-baseline font-medium text-gray-900">
                   <span>
@@ -799,13 +833,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {/* Projects */}
-      {projects && projects.length > 0 && (
+      {filteredProjects && filteredProjects.length > 0 && (
         <section className="mb-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
             Projects
           </h2>
           <div className="space-y-3">
-            {projects.map((proj, i) => (
+            {filteredProjects.map((proj, i) => (
               <div key={proj.id || i} className="text-xs">
                 <div className="flex justify-between items-baseline">
                   <span className="font-semibold text-gray-900">{proj.title}</span>
@@ -829,13 +863,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {/* Education */}
-      {education && education.length > 0 && (
+      {filteredEducation && filteredEducation.length > 0 && (
         <section className="mb-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
             Education
           </h2>
           <div className="space-y-1.5">
-            {education.map((edu, i) => (
+            {filteredEducation.map((edu, i) => (
               <div key={edu.id || i} className="flex justify-between text-xs">
                 <div>
                   <span className="font-semibold text-gray-900">{edu.degree}</span>
@@ -849,13 +883,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {/* Certifications */}
-      {certifications && certifications.length > 0 && (
+      {filteredCertifications && filteredCertifications.length > 0 && (
         <section className="mb-4">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
             Certifications
           </h2>
           <ul className="list-disc list-outside ml-4 text-xs text-gray-600 space-y-0.5">
-            {certifications.map((cert, i) => (
+            {filteredCertifications.map((cert, i) => (
               <li key={cert.id || i}>
                 <span className="font-medium text-gray-800">{cert.name}</span>
                 {cert.issuer && <span className="text-gray-400"> ({cert.issuer})</span>}
@@ -866,13 +900,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {/* Achievements */}
-      {achievements && achievements.length > 0 && (
+      {filteredAchievements && filteredAchievements.length > 0 && (
         <section className="mb-2">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
             Achievements
           </h2>
           <ul className="list-disc list-outside ml-4 text-xs text-gray-600 space-y-0.5">
-            {achievements.map((ach, i) => (
+            {filteredAchievements.map((ach, i) => (
               <li key={ach.id || i}>{ach.description}</li>
             ))}
           </ul>

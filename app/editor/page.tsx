@@ -1,19 +1,155 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ResumeData, Education, Experience, Project, Certification, Achievement } from "@/types/resume";
 import { extractResumeData } from "@/lib/resumeParser";
 import { RESUME_TEMPLATES, DEFAULT_TEMPLATE_ID } from "@/data/templateData";
 import ResumePreview from "@/components/ResumePreview";
+import { enhanceAll, EnhanceField } from "@/lib/useAIEnhance";
+
+// ─── Inline Enhance Panel ────────────────────────────────────────────────────
+
+interface EnhancePanelProps {
+  original: string;
+  enhanced: string | null;
+  loading: boolean;
+  error: string | null;
+  onAccept: (text: string) => void;
+  onDiscard: () => void;
+}
+
+function EnhancePanel({ original, enhanced, loading, error, onAccept, onDiscard }: EnhancePanelProps) {
+  if (!loading && !enhanced && !error) return null;
+
+  return (
+    <div className="mt-2 rounded-lg border border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-violet-600 to-purple-600">
+        <span className="text-white text-xs font-semibold">✨ AI Enhancement</span>
+        {loading && (
+          <span className="ml-auto flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </span>
+        )}
+      </div>
+
+      <div className="p-3 space-y-3">
+        {loading && (
+          <div className="space-y-2">
+            <div className="h-3 bg-violet-100 rounded animate-pulse w-full" />
+            <div className="h-3 bg-violet-100 rounded animate-pulse w-4/5" />
+            <div className="h-3 bg-violet-100 rounded animate-pulse w-3/5" />
+            <p className="text-[11px] text-violet-500 italic">Enhancing with Gemini AI…</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">
+            ⚠️ {error}
+            <button onClick={onDiscard} className="ml-2 underline text-red-700 font-medium">
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {enhanced && !loading && (
+          <>
+            {/* Side-by-side diff */}
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div>
+                <p className="font-semibold text-gray-400 mb-1 uppercase tracking-wider">Original</p>
+                <p className="text-gray-500 bg-white rounded p-2 border border-gray-200 leading-relaxed line-through decoration-red-300">
+                  {original}
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-violet-600 mb-1 uppercase tracking-wider">Enhanced ✨</p>
+                <p className="text-gray-800 bg-white rounded p-2 border border-violet-200 leading-relaxed font-medium">
+                  {enhanced}
+                </p>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-2 justify-end pt-1">
+              <button
+                onClick={onDiscard}
+                className="text-xs px-3 py-1.5 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                ✕ Discard
+              </button>
+              <button
+                onClick={() => onAccept(enhanced)}
+                className="text-xs px-4 py-1.5 rounded bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity shadow-sm"
+              >
+                ✓ Accept
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Sparkle Button ──────────────────────────────────────────────────────────
+
+function SparkleButton({ onClick, loading, title = "Enhance with AI" }: { onClick: () => void; loading: boolean; title?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      title={title}
+      className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-md transition-all ${
+        loading
+          ? "bg-violet-100 text-violet-400 cursor-wait"
+          : "bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:opacity-90 shadow-sm"
+      }`}
+    >
+      {loading ? (
+        <span className="animate-spin inline-block">✨</span>
+      ) : (
+        "✨"
+      )}
+      {loading ? "Enhancing…" : "Enhance"}
+    </button>
+  );
+}
+
+// ─── Field-level enhance state ────────────────────────────────────────────────
+
+interface FieldEnhance {
+  loading: boolean;
+  enhanced: string | null;
+  error: string | null;
+}
+
+const emptyField: FieldEnhance = { loading: false, enhanced: null, error: null };
+
+// ─── Main Editor Page ─────────────────────────────────────────────────────────
 
 export default function EditorPage() {
-  const router = useRouter();
 
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [skillsInput, setSkillsInput] = useState("");
   const [templateId, setTemplateId] = useState<string>(DEFAULT_TEMPLATE_ID);
+
+  // Per-field enhance states
+  const [summaryEnhance, setSummaryEnhance] = useState<FieldEnhance>(emptyField);
+  // Key: `exp-{idx}` or `proj-{idx}`
+  const [fieldEnhance, setFieldEnhance] = useState<Record<string, FieldEnhance>>({});
+
+  // Global "Enhance All" state
+  const [enhancingAll, setEnhancingAll] = useState(false);
+  const [enhanceAllStatus, setEnhanceAllStatus] = useState<string | null>(null);
 
   // Load resume data on mount
   useEffect(() => {
@@ -35,7 +171,6 @@ export default function EditorPage() {
       }
     }
 
-    // Fallback if not yet organized
     const savedText = localStorage.getItem("resume_raw_text") || "";
     const savedRole = localStorage.getItem("resume_target_role") || "";
     const savedFileName = localStorage.getItem("resume_file_name") || "";
@@ -54,38 +189,28 @@ export default function EditorPage() {
     }
   };
 
-
-  // Save changes to localStorage whenever resumeData changes
   const saveToStorage = (updated: ResumeData) => {
     setResumeData(updated);
     localStorage.setItem("resume_data", JSON.stringify(updated));
   };
 
-  // Helper functions to edit fields
   const updatePersonalInfo = (field: string, value: string) => {
     if (!resumeData) return;
-    const updated = {
+    saveToStorage({
       ...resumeData,
-      personalInfo: {
-        ...resumeData.personalInfo,
-        [field]: value,
-      },
-    };
-    saveToStorage(updated);
+      personalInfo: { ...resumeData.personalInfo, [field]: value },
+    });
   };
 
   const handleSkillsChange = (val: string) => {
     setSkillsInput(val);
     if (!resumeData) return;
-    const skillList = val
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const updated = { ...resumeData, skills: skillList };
-    saveToStorage(updated);
+    const skillList = val.split(",").map((s) => s.trim()).filter(Boolean);
+    saveToStorage({ ...resumeData, skills: skillList });
   };
 
-  // Add & Remove items helpers
+  // ── Add / Remove helpers ────────────────────────────────────────────────────
+
   const addExperience = () => {
     if (!resumeData) return;
     const newExp: Experience = {
@@ -95,17 +220,14 @@ export default function EditorPage() {
       duration: "Duration",
       description: "Brief description of responsibilities and achievements.",
     };
-    saveToStorage({
-      ...resumeData,
-      experience: [...resumeData.experience, newExp],
-    });
+    saveToStorage({ ...resumeData, experience: [...resumeData.experience, newExp] });
   };
 
   const removeExperience = (index: number) => {
     if (!resumeData) return;
-    const updatedExp = [...resumeData.experience];
-    updatedExp.splice(index, 1);
-    saveToStorage({ ...resumeData, experience: updatedExp });
+    const updated = [...resumeData.experience];
+    updated.splice(index, 1);
+    saveToStorage({ ...resumeData, experience: updated });
   };
 
   const addProject = () => {
@@ -121,9 +243,9 @@ export default function EditorPage() {
 
   const removeProject = (index: number) => {
     if (!resumeData) return;
-    const updatedProj = [...resumeData.projects];
-    updatedProj.splice(index, 1);
-    saveToStorage({ ...resumeData, projects: updatedProj });
+    const updated = [...resumeData.projects];
+    updated.splice(index, 1);
+    saveToStorage({ ...resumeData, projects: updated });
   };
 
   const addEducation = () => {
@@ -139,9 +261,9 @@ export default function EditorPage() {
 
   const removeEducation = (index: number) => {
     if (!resumeData) return;
-    const updatedEdu = [...resumeData.education];
-    updatedEdu.splice(index, 1);
-    saveToStorage({ ...resumeData, education: updatedEdu });
+    const updated = [...resumeData.education];
+    updated.splice(index, 1);
+    saveToStorage({ ...resumeData, education: updated });
   };
 
   const addCertification = () => {
@@ -151,17 +273,14 @@ export default function EditorPage() {
       name: "Certification Name",
       issuer: "Issuing Organization",
     };
-    saveToStorage({
-      ...resumeData,
-      certifications: [...resumeData.certifications, newCert],
-    });
+    saveToStorage({ ...resumeData, certifications: [...resumeData.certifications, newCert] });
   };
 
   const removeCertification = (index: number) => {
     if (!resumeData) return;
-    const updatedCert = [...resumeData.certifications];
-    updatedCert.splice(index, 1);
-    saveToStorage({ ...resumeData, certifications: updatedCert });
+    const updated = [...resumeData.certifications];
+    updated.splice(index, 1);
+    saveToStorage({ ...resumeData, certifications: updated });
   };
 
   const addAchievement = () => {
@@ -170,18 +289,121 @@ export default function EditorPage() {
       id: Date.now().toString(),
       description: "Describe your award, contest, or hackathon achievement.",
     };
-    saveToStorage({
-      ...resumeData,
-      achievements: [...resumeData.achievements, newAch],
-    });
+    saveToStorage({ ...resumeData, achievements: [...resumeData.achievements, newAch] });
   };
 
   const removeAchievement = (index: number) => {
     if (!resumeData) return;
-    const updatedAch = [...resumeData.achievements];
-    updatedAch.splice(index, 1);
-    saveToStorage({ ...resumeData, achievements: updatedAch });
+    const updated = [...resumeData.achievements];
+    updated.splice(index, 1);
+    saveToStorage({ ...resumeData, achievements: updated });
   };
+
+  // ── Per-field enhance helpers ───────────────────────────────────────────────
+
+  const callEnhanceAPI = async (
+    field: EnhanceField,
+    content: string,
+    targetRole: string
+  ): Promise<{ enhanced: string | null; error: string | null }> => {
+    try {
+      const res = await fetch("/api/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ field, content, targetRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { enhanced: null, error: data.error || "Enhancement failed" };
+      return { enhanced: data.enhanced, error: null };
+    } catch (err) {
+      return { enhanced: null, error: err instanceof Error ? err.message : "Network error" };
+    }
+  };
+
+  const enhanceSummary = async () => {
+    if (!resumeData) return;
+    setSummaryEnhance({ loading: true, enhanced: null, error: null });
+    const { enhanced, error } = await callEnhanceAPI("summary", resumeData.summary, resumeData.targetRole);
+    setSummaryEnhance({ loading: false, enhanced, error });
+  };
+
+  const enhanceExpDescription = async (idx: number) => {
+    if (!resumeData) return;
+    const key = `exp-${idx}`;
+    setFieldEnhance((prev) => ({ ...prev, [key]: { loading: true, enhanced: null, error: null } }));
+    const { enhanced, error } = await callEnhanceAPI(
+      "experience",
+      resumeData.experience[idx].description,
+      resumeData.targetRole
+    );
+    setFieldEnhance((prev) => ({ ...prev, [key]: { loading: false, enhanced, error } }));
+  };
+
+  const enhanceProjDescription = async (idx: number) => {
+    if (!resumeData) return;
+    const key = `proj-${idx}`;
+    setFieldEnhance((prev) => ({ ...prev, [key]: { loading: true, enhanced: null, error: null } }));
+    const { enhanced, error } = await callEnhanceAPI(
+      "project",
+      resumeData.projects[idx].description,
+      resumeData.targetRole
+    );
+    setFieldEnhance((prev) => ({ ...prev, [key]: { loading: false, enhanced, error } }));
+  };
+
+  const clearFieldEnhance = (key: string) => {
+    setFieldEnhance((prev) => ({ ...prev, [key]: emptyField }));
+  };
+
+  // ── Enhance All ─────────────────────────────────────────────────────────────
+
+  const handleEnhanceAll = async () => {
+    if (!resumeData) return;
+    setEnhancingAll(true);
+    setEnhanceAllStatus("Enhancing all fields with Gemini AI…");
+
+    const fields: { field: EnhanceField; content: string }[] = [
+      { field: "summary", content: resumeData.summary },
+      ...resumeData.experience.map((e) => ({ field: "experience" as EnhanceField, content: e.description })),
+      ...resumeData.projects.map((p) => ({ field: "project" as EnhanceField, content: p.description })),
+    ];
+
+    try {
+      const results = await enhanceAll(fields, resumeData.targetRole);
+
+      let updated = { ...resumeData };
+      let ri = 0;
+
+      // Summary
+      if (results[ri]) updated = { ...updated, summary: results[ri] as string };
+      ri++;
+
+      // Experience
+      const newExp = updated.experience.map((e, i) => ({
+        ...e,
+        description: results[ri + i] ?? e.description,
+      }));
+      ri += resumeData.experience.length;
+      updated = { ...updated, experience: newExp };
+
+      // Projects
+      const newProj = updated.projects.map((p, i) => ({
+        ...p,
+        description: results[ri + i] ?? p.description,
+      }));
+      updated = { ...updated, projects: newProj };
+
+      saveToStorage(updated);
+      setEnhanceAllStatus("✅ All fields enhanced successfully!");
+    } catch {
+      setEnhanceAllStatus("⚠️ Some fields could not be enhanced. Check your API key.");
+    } finally {
+      setEnhancingAll(false);
+      setTimeout(() => setEnhanceAllStatus(null), 4000);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
 
   if (!resumeData) {
     return (
@@ -200,10 +422,28 @@ export default function EditorPage() {
             Edit Your Resume
           </h1>
           <p className="text-sm text-gray-600">
-            Target Job Role: <span className="font-semibold text-blue-600">{resumeData.targetRole}</span>
+            Target Job Role:{" "}
+            <span className="font-semibold text-blue-600">{resumeData.targetRole}</span>
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Enhance All Button */}
+          <button
+            type="button"
+            onClick={handleEnhanceAll}
+            disabled={enhancingAll}
+            className={`relative overflow-hidden text-sm font-semibold px-4 py-2 rounded-md shadow-sm transition-all ${
+              enhancingAll
+                ? "bg-violet-100 text-violet-400 cursor-wait"
+                : "bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90"
+            }`}
+          >
+            {enhancingAll && (
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            )}
+            {enhancingAll ? "✨ Enhancing All…" : "✨ Enhance All with AI"}
+          </button>
+
           <Link
             href="/templates"
             className="text-sm border border-gray-300 bg-white hover:bg-gray-50 px-3 py-2 rounded-md font-medium text-gray-700"
@@ -214,16 +454,34 @@ export default function EditorPage() {
             href="/organize"
             className="text-sm border border-gray-300 bg-white hover:bg-gray-50 px-3 py-2 rounded-md font-medium text-gray-700"
           >
-            &larr; Back to Organize
+            ← Back to Organize
           </Link>
           <Link
             href="/preview"
             className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium shadow-sm transition-colors"
           >
-            Preview Resume &rarr;
+            Preview Resume →
           </Link>
         </div>
       </div>
+
+      {/* Enhance All Status Banner */}
+      {enhanceAllStatus && (
+        <div
+          className={`mb-4 text-sm px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 ${
+            enhanceAllStatus.startsWith("✅")
+              ? "bg-green-50 text-green-700 border border-green-200"
+              : enhanceAllStatus.startsWith("⚠️")
+              ? "bg-red-50 text-red-700 border border-red-200"
+              : "bg-violet-50 text-violet-700 border border-violet-200"
+          }`}
+        >
+          {!enhanceAllStatus.startsWith("✅") && !enhanceAllStatus.startsWith("⚠️") && (
+            <span className="animate-spin">✨</span>
+          )}
+          {enhanceAllStatus}
+        </div>
+      )}
 
       {/* Two Column Layout on Desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -249,10 +507,7 @@ export default function EditorPage() {
                 <input
                   type="text"
                   value={resumeData.targetRole}
-                  onChange={(e) => {
-                    const updated = { ...resumeData, targetRole: e.target.value };
-                    saveToStorage(updated);
-                  }}
+                  onChange={(e) => saveToStorage({ ...resumeData, targetRole: e.target.value })}
                   className="w-full border border-gray-300 rounded p-2 text-sm"
                 />
               </div>
@@ -288,17 +543,30 @@ export default function EditorPage() {
 
           {/* Professional Summary */}
           <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-            <h2 className="text-base font-bold text-gray-900 mb-2 border-b pb-1.5">
-              Professional Summary
-            </h2>
+            <div className="flex items-center justify-between mb-2 border-b pb-1.5">
+              <h2 className="text-base font-bold text-gray-900">Professional Summary</h2>
+              <SparkleButton
+                onClick={enhanceSummary}
+                loading={summaryEnhance.loading}
+                title="Enhance your summary with AI"
+              />
+            </div>
             <textarea
               rows={3}
               value={resumeData.summary}
-              onChange={(e) => {
-                const updated = { ...resumeData, summary: e.target.value };
-                saveToStorage(updated);
-              }}
+              onChange={(e) => saveToStorage({ ...resumeData, summary: e.target.value })}
               className="w-full border border-gray-300 rounded p-2 text-sm text-gray-900"
+            />
+            <EnhancePanel
+              original={resumeData.summary}
+              enhanced={summaryEnhance.enhanced}
+              loading={summaryEnhance.loading}
+              error={summaryEnhance.error}
+              onAccept={(text) => {
+                saveToStorage({ ...resumeData, summary: text });
+                setSummaryEnhance(emptyField);
+              }}
+              onDiscard={() => setSummaryEnhance(emptyField)}
             />
           </div>
 
@@ -328,66 +596,93 @@ export default function EditorPage() {
                 + Add Experience
               </button>
             </div>
-            {resumeData.experience.map((exp, idx) => (
-              <div key={exp.id || idx} className="p-3 bg-gray-50 border border-gray-200 rounded mb-3 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-gray-500">Position #{idx + 1}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeExperience(idx)}
-                    className="text-xs text-red-600 hover:underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
+            {resumeData.experience.map((exp, idx) => {
+              const key = `exp-${idx}`;
+              const fState = fieldEnhance[key] || emptyField;
+              return (
+                <div key={exp.id || idx} className="p-3 bg-gray-50 border border-gray-200 rounded mb-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-semibold text-gray-500">Position #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeExperience(idx)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={exp.title}
+                      placeholder="Job Title"
+                      onChange={(e) => {
+                        const updated = [...resumeData.experience];
+                        updated[idx] = { ...updated[idx], title: e.target.value };
+                        saveToStorage({ ...resumeData, experience: updated });
+                      }}
+                      className="border rounded p-1.5 text-xs bg-white"
+                    />
+                    <input
+                      type="text"
+                      value={exp.company}
+                      placeholder="Company"
+                      onChange={(e) => {
+                        const updated = [...resumeData.experience];
+                        updated[idx] = { ...updated[idx], company: e.target.value };
+                        saveToStorage({ ...resumeData, experience: updated });
+                      }}
+                      className="border rounded p-1.5 text-xs bg-white"
+                    />
+                  </div>
                   <input
                     type="text"
-                    value={exp.title}
-                    placeholder="Job Title"
+                    value={exp.duration}
+                    placeholder="Duration (e.g. June 2024 - Aug 2024)"
                     onChange={(e) => {
                       const updated = [...resumeData.experience];
-                      updated[idx].title = e.target.value;
+                      updated[idx] = { ...updated[idx], duration: e.target.value };
                       saveToStorage({ ...resumeData, experience: updated });
                     }}
-                    className="border rounded p-1.5 text-xs bg-white"
+                    className="w-full border rounded p-1.5 text-xs bg-white"
                   />
-                  <input
-                    type="text"
-                    value={exp.company}
-                    placeholder="Company"
-                    onChange={(e) => {
-                      const updated = [...resumeData.experience];
-                      updated[idx].company = e.target.value;
-                      saveToStorage({ ...resumeData, experience: updated });
-                    }}
-                    className="border rounded p-1.5 text-xs bg-white"
-                  />
+                  {/* Description + Enhance */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] text-gray-500 font-medium">Description</span>
+                      <SparkleButton
+                        onClick={() => enhanceExpDescription(idx)}
+                        loading={fState.loading}
+                      />
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={exp.description}
+                      placeholder="Responsibilities and key contributions"
+                      onChange={(e) => {
+                        const updated = [...resumeData.experience];
+                        updated[idx] = { ...updated[idx], description: e.target.value };
+                        saveToStorage({ ...resumeData, experience: updated });
+                      }}
+                      className="w-full border rounded p-1.5 text-xs bg-white"
+                    />
+                    <EnhancePanel
+                      original={exp.description}
+                      enhanced={fState.enhanced}
+                      loading={fState.loading}
+                      error={fState.error}
+                      onAccept={(text) => {
+                        const updated = [...resumeData.experience];
+                        updated[idx] = { ...updated[idx], description: text };
+                        saveToStorage({ ...resumeData, experience: updated });
+                        clearFieldEnhance(key);
+                      }}
+                      onDiscard={() => clearFieldEnhance(key)}
+                    />
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  value={exp.duration}
-                  placeholder="Duration (e.g. June 2024 - Aug 2024)"
-                  onChange={(e) => {
-                    const updated = [...resumeData.experience];
-                    updated[idx].duration = e.target.value;
-                    saveToStorage({ ...resumeData, experience: updated });
-                  }}
-                  className="w-full border rounded p-1.5 text-xs bg-white"
-                />
-                <textarea
-                  rows={2}
-                  value={exp.description}
-                  placeholder="Responsibilities and key contributions"
-                  onChange={(e) => {
-                    const updated = [...resumeData.experience];
-                    updated[idx].description = e.target.value;
-                    saveToStorage({ ...resumeData, experience: updated });
-                  }}
-                  className="w-full border rounded p-1.5 text-xs bg-white"
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Projects Section */}
@@ -402,53 +697,80 @@ export default function EditorPage() {
                 + Add Project
               </button>
             </div>
-            {resumeData.projects.map((proj, idx) => (
-              <div key={proj.id || idx} className="p-3 bg-gray-50 border border-gray-200 rounded mb-3 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-gray-500">Project #{idx + 1}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeProject(idx)}
-                    className="text-xs text-red-600 hover:underline"
-                  >
-                    Remove
-                  </button>
+            {resumeData.projects.map((proj, idx) => {
+              const key = `proj-${idx}`;
+              const fState = fieldEnhance[key] || emptyField;
+              return (
+                <div key={proj.id || idx} className="p-3 bg-gray-50 border border-gray-200 rounded mb-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-semibold text-gray-500">Project #{idx + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeProject(idx)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={proj.title}
+                    placeholder="Project Title"
+                    onChange={(e) => {
+                      const updated = [...resumeData.projects];
+                      updated[idx] = { ...updated[idx], title: e.target.value };
+                      saveToStorage({ ...resumeData, projects: updated });
+                    }}
+                    className="w-full border rounded p-1.5 text-xs bg-white"
+                  />
+                  <input
+                    type="text"
+                    value={proj.technologies || ""}
+                    placeholder="Technologies (e.g. React, Tailwind CSS)"
+                    onChange={(e) => {
+                      const updated = [...resumeData.projects];
+                      updated[idx] = { ...updated[idx], technologies: e.target.value };
+                      saveToStorage({ ...resumeData, projects: updated });
+                    }}
+                    className="w-full border rounded p-1.5 text-xs bg-white"
+                  />
+                  {/* Description + Enhance */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] text-gray-500 font-medium">Description</span>
+                      <SparkleButton
+                        onClick={() => enhanceProjDescription(idx)}
+                        loading={fState.loading}
+                      />
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={proj.description}
+                      placeholder="Project description"
+                      onChange={(e) => {
+                        const updated = [...resumeData.projects];
+                        updated[idx] = { ...updated[idx], description: e.target.value };
+                        saveToStorage({ ...resumeData, projects: updated });
+                      }}
+                      className="w-full border rounded p-1.5 text-xs bg-white"
+                    />
+                    <EnhancePanel
+                      original={proj.description}
+                      enhanced={fState.enhanced}
+                      loading={fState.loading}
+                      error={fState.error}
+                      onAccept={(text) => {
+                        const updated = [...resumeData.projects];
+                        updated[idx] = { ...updated[idx], description: text };
+                        saveToStorage({ ...resumeData, projects: updated });
+                        clearFieldEnhance(key);
+                      }}
+                      onDiscard={() => clearFieldEnhance(key)}
+                    />
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  value={proj.title}
-                  placeholder="Project Title"
-                  onChange={(e) => {
-                    const updated = [...resumeData.projects];
-                    updated[idx].title = e.target.value;
-                    saveToStorage({ ...resumeData, projects: updated });
-                  }}
-                  className="w-full border rounded p-1.5 text-xs bg-white"
-                />
-                <input
-                  type="text"
-                  value={proj.technologies || ""}
-                  placeholder="Technologies (e.g. React, Tailwind CSS)"
-                  onChange={(e) => {
-                    const updated = [...resumeData.projects];
-                    updated[idx].technologies = e.target.value;
-                    saveToStorage({ ...resumeData, projects: updated });
-                  }}
-                  className="w-full border rounded p-1.5 text-xs bg-white"
-                />
-                <textarea
-                  rows={2}
-                  value={proj.description}
-                  placeholder="Project description"
-                  onChange={(e) => {
-                    const updated = [...resumeData.projects];
-                    updated[idx].description = e.target.value;
-                    saveToStorage({ ...resumeData, projects: updated });
-                  }}
-                  className="w-full border rounded p-1.5 text-xs bg-white"
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Education Section */}
@@ -482,7 +804,7 @@ export default function EditorPage() {
                     placeholder="Degree"
                     onChange={(e) => {
                       const updated = [...resumeData.education];
-                      updated[idx].degree = e.target.value;
+                      updated[idx] = { ...updated[idx], degree: e.target.value };
                       saveToStorage({ ...resumeData, education: updated });
                     }}
                     className="border rounded p-1.5 text-xs bg-white"
@@ -493,7 +815,7 @@ export default function EditorPage() {
                     placeholder="Institution / College"
                     onChange={(e) => {
                       const updated = [...resumeData.education];
-                      updated[idx].institution = e.target.value;
+                      updated[idx] = { ...updated[idx], institution: e.target.value };
                       saveToStorage({ ...resumeData, education: updated });
                     }}
                     className="border rounded p-1.5 text-xs bg-white"
@@ -505,7 +827,7 @@ export default function EditorPage() {
                   placeholder="Year (e.g. 2021 - 2025)"
                   onChange={(e) => {
                     const updated = [...resumeData.education];
-                    updated[idx].year = e.target.value;
+                    updated[idx] = { ...updated[idx], year: e.target.value };
                     saveToStorage({ ...resumeData, education: updated });
                   }}
                   className="w-full border rounded p-1.5 text-xs bg-white"
@@ -536,7 +858,7 @@ export default function EditorPage() {
                     placeholder="Certification Name"
                     onChange={(e) => {
                       const updated = [...resumeData.certifications];
-                      updated[idx].name = e.target.value;
+                      updated[idx] = { ...updated[idx], name: e.target.value };
                       saveToStorage({ ...resumeData, certifications: updated });
                     }}
                     className="flex-1 border rounded p-1 text-xs"
@@ -572,7 +894,7 @@ export default function EditorPage() {
                     placeholder="Achievement details"
                     onChange={(e) => {
                       const updated = [...resumeData.achievements];
-                      updated[idx].description = e.target.value;
+                      updated[idx] = { ...updated[idx], description: e.target.value };
                       saveToStorage({ ...resumeData, achievements: updated });
                     }}
                     className="flex-1 border rounded p-1 text-xs"
@@ -598,14 +920,17 @@ export default function EditorPage() {
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                 <span className="text-xs font-bold text-gray-800">
-                  Template: <span className="text-blue-600 font-semibold">{RESUME_TEMPLATES.find((t) => t.id === templateId)?.name}</span>
+                  Template:{" "}
+                  <span className="text-blue-600 font-semibold">
+                    {RESUME_TEMPLATES.find((t) => t.id === templateId)?.name}
+                  </span>
                 </span>
               </div>
               <Link
                 href="/templates"
                 className="text-[11px] text-blue-600 hover:text-blue-800 font-medium hover:underline"
               >
-                Browse All Templates &rarr;
+                Browse All Templates →
               </Link>
             </div>
 
@@ -638,6 +963,17 @@ export default function EditorPage() {
           <ResumePreview data={resumeData} templateId={templateId} />
         </div>
       </div>
+
+      {/* Shimmer animation style */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 1.2s infinite;
+        }
+      `}</style>
     </div>
   );
 }
