@@ -4,6 +4,29 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractTextFromPdf } from "@/lib/pdfExtractor";
+import StepIndicator from "@/components/StepIndicator";
+
+const SAMPLE_PROFILE = `Alex Morgan
+alex.morgan@email.com | +1 (555) 019-2834 | San Francisco, CA | linkedin.com/in/alexmorgan
+
+Summary:
+Results-oriented Software Engineer with 4+ years of hands-on experience designing, developing, and maintaining high-performance web applications and distributed backend microservices.
+
+Experience:
+- Senior Software Engineer at Apex Cloud Solutions (2022 - Present)
+  Architected high-throughput REST APIs handling 5M+ daily requests with 99.98% uptime.
+  Optimized PostgreSQL queries, cutting p95 response latencies by 42%.
+  Mentored junior software engineers on clean code, unit testing, and CI/CD pipelines.
+
+- Software Developer at TechPulse Labs (2021 - 2022)
+  Developed responsive web interfaces using Next.js, React, and Tailwind CSS.
+  Built automated test suites achieving over 90% test coverage.
+
+Education:
+- B.S. in Computer Science, University of California Berkeley (2018 - 2022)
+
+Skills:
+TypeScript, React, Next.js, Node.js, Python, PostgreSQL, Docker, AWS, Git, REST APIs`;
 
 export default function InputPage() {
   const router = useRouter();
@@ -62,17 +85,17 @@ export default function InputPage() {
       setUploadedFileName(file.name);
       localStorage.setItem("resume_file_name", file.name);
       localStorage.removeItem("resume_data");
-      
+
       // Calculate file size in KB/MB
-      const sizeStr = file.size < 1024 * 1024 
-        ? `${(file.size / 1024).toFixed(1)} KB`
-        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+      const sizeStr =
+        file.size < 1024 * 1024
+          ? `${(file.size / 1024).toFixed(1)} KB`
+          : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
       setUploadedFileSize(sizeStr);
 
       try {
         let extracted = "";
         if (file.name.toLowerCase().endsWith(".pdf")) {
-          // Extract actual text from PDF
           const pdfText = await extractTextFromPdf(file);
           extracted = pdfText || "";
           setInputText(extracted);
@@ -125,85 +148,104 @@ export default function InputPage() {
     localStorage.removeItem("resume_data");
   };
 
+  const handleLoadSample = () => {
+    setInputText(SAMPLE_PROFILE);
+    setUploadedFileName("");
+    setErrorMessage("");
+  };
+
   return (
-    <div className="max-w-2xl mx-auto py-8">
+    <div className="max-w-2xl mx-auto py-4 sm:py-6">
+      <StepIndicator currentStep={1} />
+
       {/* Page Heading */}
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-        Enter Your Information
-      </h1>
-      <p className="text-gray-600 mb-6 text-sm sm:text-base">
-        Paste your achievements, skills, education, projects, or upload an existing resume.
-      </p>
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          Enter Your Information
+        </h1>
+        <p className="text-slate-600 text-sm sm:text-base mt-1.5">
+          Upload an existing resume or paste your experience, skills, and projects below.
+        </p>
+      </div>
 
       {/* Upload Section Card */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs mb-6">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-base font-semibold text-gray-900">
-            Upload Existing Resume
-          </h2>
-          <span className="text-xs bg-blue-50 text-blue-700 font-medium px-2 py-0.5 rounded border border-blue-100">
-            Fast Track
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-slate-900">
+              Option 1: Upload Existing Resume
+            </span>
+            <span className="text-[11px] bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full border border-blue-200/60">
+              Fast Track
+            </span>
+          </div>
         </div>
-        <p className="text-xs text-gray-500 mb-4">
-          Upload your resume file (.pdf, .docx, .txt) to automatically extract your experience and skills.
+        <p className="text-xs text-slate-500 mb-4">
+          Upload your resume file (.pdf, .docx, .txt) to automatically extract your career history.
         </p>
 
         {!uploadedFileName ? (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <label className="cursor-pointer inline-flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-sm font-medium px-4 py-2.5 rounded-md transition-colors shadow-sm">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label className="group cursor-pointer border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50/60 hover:bg-blue-50/20 rounded-xl p-6 transition-all flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-200/70 flex items-center justify-center text-blue-600 mb-2.5 group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
-              <span>Upload Resume File</span>
-              <input
-                type="file"
-                accept=".pdf,.docx,.txt"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
-            <span className="text-xs text-gray-400">Supports PDF, DOCX, or TXT</span>
-          </div>
+            </div>
+            <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors">
+              Click to browse or drop resume here
+            </span>
+            <span className="text-xs text-slate-400 mt-1">
+              Supports PDF, DOCX, or TXT (Max 10MB)
+            </span>
+            <input
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </label>
         ) : (
           <div className="space-y-4">
             {/* File Info Box */}
-            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3.5">
+            <div className="flex items-center justify-between bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 bg-green-100 rounded-md flex items-center justify-center text-green-700 font-bold text-xs flex-shrink-0">
+                <div className="w-9 h-9 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center text-emerald-700 font-bold text-xs flex-shrink-0">
                   FILE
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-green-900 truncate">
+                  <p className="text-sm font-semibold text-emerald-950 truncate">
                     {uploadedFileName}
                   </p>
-                  {uploadedFileSize && (
-                    <p className="text-xs text-green-700">{uploadedFileSize} &bull; Ready to submit</p>
-                  )}
+                  <p className="text-xs text-emerald-700">
+                    {uploadedFileSize ? `${uploadedFileSize} • ` : ""}
+                    {isProcessingFile ? "Extracting content..." : "Ready to proceed"}
+                  </p>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleRemoveFile}
-                className="text-xs text-red-600 hover:text-red-800 font-medium px-2 py-1 ml-2 flex-shrink-0"
+                className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2.5 py-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
               >
                 Remove
               </button>
             </div>
 
             {/* Direct Submit Button for Uploaded Resume */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-              <p className="text-xs text-gray-500">
-                Data extracted! You can edit it below or submit directly.
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+              <p className="text-xs text-slate-500">
+                {isProcessingFile
+                  ? "Parsing document text..."
+                  : "Content extracted! You can edit details below or continue directly."}
               </p>
               <button
                 type="button"
                 onClick={handleSubmitUploadedResume}
                 disabled={isProcessingFile}
-                className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2.5 rounded-md text-sm transition-colors shadow-sm cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
               >
-                <span>Submit Resume &amp; Continue</span>
+                <span>Continue to Target Role</span>
                 <span>&rarr;</span>
               </button>
             </div>
@@ -212,51 +254,67 @@ export default function InputPage() {
       </div>
 
       <div className="relative flex py-2 items-center mb-6">
-        <div className="flex-grow border-t border-gray-200"></div>
-        <span className="flex-shrink mx-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
-          Or Enter / Edit Details Manually
+        <div className="flex-grow border-t border-slate-200/80"></div>
+        <span className="flex-shrink mx-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          Option 2: Enter or Edit Information Manually
         </span>
-        <div className="flex-grow border-t border-gray-200"></div>
+        <div className="flex-grow border-t border-slate-200/80"></div>
       </div>
 
       {/* Main Input Form */}
-      <form onSubmit={handleContinue} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
-        <label htmlFor="rawInfo" className="block text-sm font-medium text-gray-700 mb-2">
-          Your Career &amp; Project Details
-        </label>
-        
+      <form onSubmit={handleContinue} className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
+        <div className="flex items-center justify-between mb-2">
+          <label htmlFor="rawInfo" className="block text-sm font-bold text-slate-900">
+            Career, Education &amp; Project Details
+          </label>
+          <button
+            type="button"
+            onClick={handleLoadSample}
+            className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+          >
+            Load Sample Profile
+          </button>
+        </div>
+
+        <p className="text-xs text-slate-500 mb-3">
+          Paste your bullet points, rough notes, or LinkedIn summary. Our parser will categorize your experience automatically.
+        </p>
+
         <textarea
           id="rawInfo"
-          rows={7}
+          rows={8}
           value={inputText}
           onChange={(e) => {
             setInputText(e.target.value);
             if (errorMessage) setErrorMessage("");
           }}
-          placeholder={`Example:\nI completed a React course, built three websites, participated in two hackathons, worked as a software development intern, created a portfolio website and have a Python certification.`}
-          className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+          placeholder="Example:
+I have 3 years of experience as a Full Stack Developer at Acme Corp. Built React/Node.js web apps, optimized SQL queries, and integrated AWS S3. Graduated with a B.S. in Computer Science in 2021. Skilled in TypeScript, React, Next.js, Node.js, Docker, and PostgreSQL."
+          className="w-full border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl p-3.5 text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:outline-none"
         />
 
         {/* Validation Error Message */}
         {errorMessage && (
-          <p className="mt-2 text-sm text-red-600 font-medium">
-            {errorMessage}
-          </p>
+          <div className="mt-3 text-xs text-rose-700 bg-rose-50 border border-rose-200/80 rounded-lg p-2.5 flex items-center gap-1.5 font-medium">
+            <span>⚠️</span>
+            <span>{errorMessage}</span>
+          </div>
         )}
 
         {/* Action Buttons */}
-        <div className="mt-6 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-100">
           <Link
             href="/"
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
           >
             &larr; Back to Home
           </Link>
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md text-sm transition-colors"
+            className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
           >
-            Continue &rarr;
+            <span>Next: Target Role</span>
+            <span>&rarr;</span>
           </button>
         </div>
       </form>

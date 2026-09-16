@@ -7,6 +7,7 @@ import { extractResumeData } from "@/lib/resumeParser";
 import { RESUME_TEMPLATES, DEFAULT_TEMPLATE_ID } from "@/data/templateData";
 import ResumePreview from "@/components/ResumePreview";
 import { enhanceAll, EnhanceField } from "@/lib/useAIEnhance";
+import StepIndicator from "@/components/StepIndicator";
 
 // ─── Inline Enhance Panel ────────────────────────────────────────────────────
 
@@ -414,14 +415,21 @@ export default function EditorPage() {
   }
 
   return (
-    <div className="py-6 max-w-6xl mx-auto">
+    <div className="py-4 sm:py-6 max-w-6xl mx-auto">
+      <StepIndicator currentStep={4} />
+
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-gray-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-white border border-slate-200/80 p-4 sm:p-5 rounded-2xl shadow-2xs">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Edit Your Resume
-          </h1>
-          <p className="text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+              Resume Editor
+            </h1>
+            <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/70 px-2 py-0.5 rounded-full">
+              Live Sync
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">
             Target Job Role:{" "}
             <span className="font-semibold text-blue-600">{resumeData.targetRole}</span>
           </p>
@@ -432,10 +440,10 @@ export default function EditorPage() {
             type="button"
             onClick={handleEnhanceAll}
             disabled={enhancingAll}
-            className={`relative overflow-hidden text-sm font-semibold px-4 py-2 rounded-md shadow-sm transition-all ${
+            className={`relative overflow-hidden text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl shadow-xs transition-all cursor-pointer ${
               enhancingAll
                 ? "bg-violet-100 text-violet-400 cursor-wait"
-                : "bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90"
+                : "bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-95 shadow-sm"
             }`}
           >
             {enhancingAll && (
@@ -446,21 +454,16 @@ export default function EditorPage() {
 
           <Link
             href="/templates"
-            className="text-sm border border-gray-300 bg-white hover:bg-gray-50 px-3 py-2 rounded-md font-medium text-gray-700"
+            className="text-xs sm:text-sm border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 px-3 py-2 rounded-xl font-semibold text-slate-700 transition-colors"
           >
             Change Template
           </Link>
           <Link
-            href="/organize"
-            className="text-sm border border-gray-300 bg-white hover:bg-gray-50 px-3 py-2 rounded-md font-medium text-gray-700"
-          >
-            ← Back to Organize
-          </Link>
-          <Link
             href="/preview"
-            className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium shadow-sm transition-colors"
+            className="text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold shadow-xs transition-colors flex items-center gap-1"
           >
-            Preview Resume →
+            <span>Preview &amp; Export</span>
+            <span>&rarr;</span>
           </Link>
         </div>
       </div>

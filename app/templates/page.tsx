@@ -7,6 +7,8 @@ import { RESUME_TEMPLATES, DEFAULT_TEMPLATE_ID, ResumeTemplate } from "@/data/te
 import { ResumeData } from "@/types/resume";
 import ResumePreview from "@/components/ResumePreview";
 
+import StepIndicator from "@/components/StepIndicator";
+
 // Mock sample data for users who haven't inputted their resume yet
 const SAMPLE_RESUME_DATA: ResumeData = {
   personalInfo: {
@@ -135,70 +137,71 @@ export default function TemplatesPage() {
   const activePreviewData = userResumeData || SAMPLE_RESUME_DATA;
 
   return (
-    <div className="py-6 max-w-6xl mx-auto">
+    <div className="py-4 sm:py-6 max-w-6xl mx-auto">
+      <StepIndicator currentStep={3} />
+
       {/* Header Banner */}
       <div className="text-center max-w-3xl mx-auto mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200 mb-3">
-          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 mb-3 shadow-2xs">
+          <svg className="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
-          100% ATS Friendly & Parser-Verified
+          <span>100% ATS Compliant &amp; Parser-Verified</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
-          Choose Your Resume Template
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+          Choose Your ATS Template
         </h1>
-        <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-          Every template below is strictly designed to pass Applicant Tracking Systems (ATS).
-          Single-column flow, standard semantic headings, and zero unparseable graphics.
+        <p className="text-slate-600 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
+          Every layout follows strict ATS requirements: single-column linear flow, standard heading tags, and parseable typography.
         </p>
 
         {/* ATS Checklist pills */}
-        <div className="flex flex-wrap justify-center items-center gap-2 mt-4 text-xs text-gray-600">
-          <span className="bg-white border border-gray-200 px-2.5 py-1 rounded-md shadow-2xs font-medium">
-            Single-Column Linear Structure
+        <div className="flex flex-wrap justify-center items-center gap-2 mt-4 text-xs text-slate-600">
+          <span className="bg-white border border-slate-200/90 px-2.5 py-1 rounded-lg shadow-2xs font-medium">
+            Single-Column Flow
           </span>
-          <span className="bg-white border border-gray-200 px-2.5 py-1 rounded-md shadow-2xs font-medium">
-            Standard Heading Hierarchy
+          <span className="bg-white border border-slate-200/90 px-2.5 py-1 rounded-lg shadow-2xs font-medium">
+            Semantic Headings
           </span>
-          <span className="bg-white border border-gray-200 px-2.5 py-1 rounded-md shadow-2xs font-medium">
-            Clean Machine-Readable Fonts
+          <span className="bg-white border border-slate-200/90 px-2.5 py-1 rounded-lg shadow-2xs font-medium">
+            High ATS Score
           </span>
-          <span className="bg-white border border-gray-200 px-2.5 py-1 rounded-md shadow-2xs font-medium">
-            PDF Print Ready
+          <span className="bg-white border border-slate-200/90 px-2.5 py-1 rounded-lg shadow-2xs font-medium">
+            PDF &amp; Word Ready
           </span>
         </div>
       </div>
 
       {/* View Mode Toggle & Quick Info */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 bg-white border border-gray-200 p-4 rounded-xl shadow-xs">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 bg-white border border-slate-200/80 p-4 rounded-2xl shadow-2xs">
         <div className="text-left">
-          <div className="text-sm font-bold text-gray-900">
+          <div className="text-sm font-bold text-slate-900">
             Selected: <span className="text-blue-600">{RESUME_TEMPLATES.find((t) => t.id === selectedTemplate)?.name}</span>
           </div>
-          <p className="text-xs text-gray-500">
-            {hasExistingData ? "Showing your customized resume data" : "Showing sample data (your data will be applied automatically)"}
+          <p className="text-xs text-slate-500">
+            {hasExistingData ? "Showing your customized resume data" : "Showing sample preview data (your data will apply in Editor)"}
           </p>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
           {/* Toggle Full Preview vs Grid */}
-          <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 text-xs font-medium">
+          <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100/70 p-1 text-xs font-semibold">
             <button
               onClick={() => setPreviewMode("card")}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 previewMode === "card"
-                  ? "bg-white text-gray-900 shadow-xs font-semibold"
-                  : "text-gray-500 hover:text-gray-900"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               Templates Grid
             </button>
             <button
               onClick={() => setPreviewMode("full")}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 previewMode === "full"
-                  ? "bg-white text-blue-600 shadow-xs font-semibold"
-                  : "text-gray-500 hover:text-gray-900"
+                  ? "bg-white text-blue-600 shadow-2xs font-bold"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               Full Live Preview
@@ -207,7 +210,7 @@ export default function TemplatesPage() {
 
           <button
             onClick={handleContinue}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors shadow-xs flex items-center gap-1.5"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
             <span>{hasExistingData ? "Apply to Editor" : "Continue"}</span>
             <span>&rarr;</span>

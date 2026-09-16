@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ResumeData } from "@/types/resume";
 import { extractResumeData } from "@/lib/resumeParser";
+import StepIndicator from "@/components/StepIndicator";
 
 export default function OrganizePage() {
   const router = useRouter();
@@ -193,25 +194,29 @@ export default function OrganizePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="max-w-3xl mx-auto py-4 sm:py-6">
+      <StepIndicator currentStep={4} />
+
       {/* Page Heading */}
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-        Organized Information
-      </h1>
-      <p className="text-gray-600 mb-4 text-sm sm:text-base">
-        Review and customize the information extracted for{" "}
-        <span className="font-semibold text-blue-600">{targetRole || "your selected role"}</span>.
-      </p>
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          Review &amp; Organize Information
+        </h1>
+        <p className="text-slate-600 text-xs sm:text-sm mt-1 leading-relaxed">
+          Verify and refine the information extracted for{" "}
+          <span className="font-semibold text-blue-600">{targetRole || "your target role"}</span>.
+        </p>
+      </div>
 
       {/* Uploaded Resume Notice Banner */}
       {uploadedFileName && (
-        <div className="mb-6 flex items-center gap-2.5 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm shadow-sm">
-          <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mb-6 flex items-center gap-2.5 bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-3 rounded-xl text-xs sm:text-sm shadow-2xs">
+          <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
             <span className="font-semibold">Extracted from Resume:</span> {uploadedFileName}
-            <p className="text-xs text-green-700 mt-0.5">
+            <p className="text-xs text-emerald-700 mt-0.5">
               All resume fields have been extracted into the editable forms below.
             </p>
           </div>

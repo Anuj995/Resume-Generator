@@ -8,6 +8,8 @@ import { RESUME_TEMPLATES, DEFAULT_TEMPLATE_ID } from "@/data/templateData";
 import ResumePreview from "@/components/ResumePreview";
 import { downloadAsWord } from "@/lib/wordExport";
 
+import StepIndicator from "@/components/StepIndicator";
+
 export default function PreviewPage() {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [templateId, setTemplateId] = useState<string>(DEFAULT_TEMPLATE_ID);
@@ -66,42 +68,44 @@ export default function PreviewPage() {
 
   if (!resumeData) {
     return (
-      <div className="py-12 text-center text-gray-500">
+      <div className="py-12 text-center text-slate-500 font-medium">
         Loading resume preview...
       </div>
     );
   }
 
   return (
-    <div className="py-8 max-w-4xl mx-auto">
+    <div className="py-4 sm:py-6 max-w-4xl mx-auto">
+      <StepIndicator currentStep={5} />
+
       {/* Top Action Controls (hidden when printing) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white border border-gray-200 p-4 rounded-xl shadow-xs print:hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white border border-slate-200/80 p-4 sm:p-5 rounded-2xl shadow-2xs print:hidden">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Resume Preview
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+              Resume Preview &amp; Export
             </h1>
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
               100% ATS Safe
             </span>
           </div>
-          <p className="text-xs text-gray-600 mt-0.5">
-            Switch templates, review layout, and export clean PDF for job applications.
+          <p className="text-xs text-slate-500 mt-1">
+            Review layout, switch templates, and export directly as PDF or Word document.
           </p>
         </div>
 
         {/* Template Switcher & Actions */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Template Select Dropdown */}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-300 rounded-md px-2.5 py-1.5">
-            <label htmlFor="preview-template-select" className="text-xs font-semibold text-gray-600">
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 shadow-2xs">
+            <label htmlFor="preview-template-select" className="text-xs font-bold text-slate-600">
               Template:
             </label>
             <select
               id="preview-template-select"
               value={templateId}
               onChange={(e) => handleTemplateChange(e.target.value)}
-              className="text-xs font-bold text-gray-900 bg-transparent focus:outline-none cursor-pointer"
+              className="text-xs font-bold text-slate-900 bg-transparent focus:outline-none cursor-pointer"
             >
               {RESUME_TEMPLATES.map((tpl) => (
                 <option key={tpl.id} value={tpl.id}>
@@ -112,33 +116,17 @@ export default function PreviewPage() {
           </div>
 
           <Link
-            href="/templates"
-            className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1.5 hover:underline"
-          >
-            All Templates
-          </Link>
-
-          <Link
             href="/editor"
-            className="text-xs sm:text-sm border border-gray-300 bg-white hover:bg-gray-50 px-3 py-2 rounded-md font-medium text-gray-700 transition-colors"
+            className="text-xs sm:text-sm border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 px-3.5 py-2 rounded-xl font-semibold text-slate-700 transition-colors flex items-center gap-1"
           >
-            &larr; Edit Resume
+            <span>&larr;</span>
+            <span>Edit Resume</span>
           </Link>
-
-          <button
-            onClick={handlePrint}
-            className="text-xs sm:text-sm bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-md shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Download PDF / Print</span>
-          </button>
 
           <button
             onClick={handleWordDownload}
             disabled={wordLoading}
-            className="text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-md shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             {wordLoading ? (
               <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -147,16 +135,26 @@ export default function PreviewPage() {
               </svg>
             ) : (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
               </svg>
             )}
             <span>{wordLoading ? "Generating..." : "Download Word"}</span>
+          </button>
+
+          <button
+            onClick={handlePrint}
+            className="text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Download PDF / Print</span>
           </button>
         </div>
       </div>
 
       {/* Resume Document Content */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
         <ResumePreview data={resumeData} templateId={templateId} />
       </div>
     </div>
