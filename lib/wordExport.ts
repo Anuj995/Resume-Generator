@@ -117,25 +117,48 @@ export async function downloadAsWord(data: ResumeData): Promise<void> {
     );
   }
 
-  const contactParts = [
-    personalInfo.email,
+  const contactParts1 = [
     personalInfo.phone,
+    personalInfo.email,
     personalInfo.location,
   ].filter(Boolean);
 
-  if (contactParts.length > 0) {
+  if (contactParts1.length > 0) {
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
         children: [
           new TextRun({
-            text: contactParts.join("  \u2022  "),
+            text: contactParts1.join("  |  "),
             size: 18,
             font: "Calibri",
-            color: "555555",
+            color: "333333",
           }),
         ],
-        spacing: { after: 100 },
+        spacing: { after: 30 },
+      })
+    );
+  }
+
+  const contactParts2 = [
+    personalInfo.linkedin,
+    personalInfo.github,
+    personalInfo.portfolio,
+  ].filter(Boolean);
+
+  if (contactParts2.length > 0) {
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({
+            text: contactParts2.join("  |  "),
+            size: 18,
+            font: "Calibri",
+            color: "444444",
+          }),
+        ],
+        spacing: { after: 60 },
       })
     );
   }

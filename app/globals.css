@@ -50,3 +50,36 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ==========================================================================
+   ATS Resume Print Styling (Pure Selectable Vector Text, Standard Margins)
+   ========================================================================== */
+@media print {
+  @page {
+    margin: 0.5in;
+    size: letter portrait;
+  }
+
+  html, body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide UI elements when generating PDF via print */
+  nav, footer, .print\:hidden, button, a[href^="/"] {
+    display: none !important;
+  }
+
+  #resume-preview-document {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    min-height: auto !important;
+  }
+}
+

@@ -453,16 +453,10 @@ export default function EditorPage() {
           </button>
 
           <Link
-            href="/templates"
-            className="text-xs sm:text-sm border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 px-3 py-2 rounded-xl font-semibold text-slate-700 transition-colors"
-          >
-            Change Template
-          </Link>
-          <Link
             href="/preview"
-            className="text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold shadow-xs transition-colors flex items-center gap-1"
+            className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-xs transition-all"
           >
-            <span>Preview &amp; Export</span>
+            <span>Preview &amp; Download PDF</span>
             <span>&rarr;</span>
           </Link>
         </div>
@@ -532,12 +526,42 @@ export default function EditorPage() {
                   className="w-full border border-gray-300 rounded p-2 text-sm"
                 />
               </div>
-              <div className="sm:col-span-2">
+              <div>
                 <label className="text-xs font-medium text-gray-700 block mb-1">Location</label>
                 <input
                   type="text"
                   value={resumeData.personalInfo.location}
                   onChange={(e) => updatePersonalInfo("location", e.target.value)}
+                  className="w-full border border-gray-300 rounded p-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700 block mb-1">LinkedIn</label>
+                <input
+                  type="text"
+                  placeholder="linkedin.com/in/username"
+                  value={resumeData.personalInfo.linkedin || ""}
+                  onChange={(e) => updatePersonalInfo("linkedin", e.target.value)}
+                  className="w-full border border-gray-300 rounded p-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700 block mb-1">GitHub</label>
+                <input
+                  type="text"
+                  placeholder="github.com/username"
+                  value={resumeData.personalInfo.github || ""}
+                  onChange={(e) => updatePersonalInfo("github", e.target.value)}
+                  className="w-full border border-gray-300 rounded p-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700 block mb-1">Portfolio</label>
+                <input
+                  type="text"
+                  placeholder="yourportfolio.dev"
+                  value={resumeData.personalInfo.portfolio || ""}
+                  onChange={(e) => updatePersonalInfo("portfolio", e.target.value)}
                   className="w-full border border-gray-300 rounded p-2 text-sm"
                 />
               </div>
@@ -824,17 +848,30 @@ export default function EditorPage() {
                     className="border rounded p-1.5 text-xs bg-white"
                   />
                 </div>
-                <input
-                  type="text"
-                  value={edu.year}
-                  placeholder="Year (e.g. 2021 - 2025)"
-                  onChange={(e) => {
-                    const updated = [...resumeData.education];
-                    updated[idx] = { ...updated[idx], year: e.target.value };
-                    saveToStorage({ ...resumeData, education: updated });
-                  }}
-                  className="w-full border rounded p-1.5 text-xs bg-white"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={edu.year}
+                    placeholder="Year (e.g. 2021 - 2025)"
+                    onChange={(e) => {
+                      const updated = [...resumeData.education];
+                      updated[idx] = { ...updated[idx], year: e.target.value };
+                      saveToStorage({ ...resumeData, education: updated });
+                    }}
+                    className="border rounded p-1.5 text-xs bg-white"
+                  />
+                  <input
+                    type="text"
+                    value={edu.cgpa || ""}
+                    placeholder="CGPA (e.g. 8.2/10)"
+                    onChange={(e) => {
+                      const updated = [...resumeData.education];
+                      updated[idx] = { ...updated[idx], cgpa: e.target.value };
+                      saveToStorage({ ...resumeData, education: updated });
+                    }}
+                    className="border rounded p-1.5 text-xs bg-white"
+                  />
+                </div>
               </div>
             ))}
           </div>

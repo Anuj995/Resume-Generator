@@ -7,8 +7,6 @@ interface ResumePreviewProps {
 }
 
 export default function ResumePreview({ data, templateId }: ResumePreviewProps) {
-  const activeTemplate = templateId || data.templateId || "classic";
-
   const {
     personalInfo,
     targetRole,
@@ -17,22 +15,26 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
     experience,
     projects,
     skills,
+    categorizedSkills,
     certifications,
     achievements,
+    hackathons,
+    courses,
+    volunteerExperience,
+    publications,
   } = data;
 
   // Split description text by newlines or sentences for ATS clean bullet points
   const formatBulletPoints = (text: string) => {
     if (!text) return [];
-    // If text already has newlines or dashes, split by newline
     const lines = text
       .split(/\n+/)
-      .map((line) => line.trim().replace(/^[-•*]\s*/, ""))
+      .map((line) => line.trim().replace(/^[-•*Ó‡R\d+.)]\s*/, ""))
       .filter((line) => line.length > 0);
-    return lines.length > 0 ? lines : [text];
+    return lines.length > 0 ? lines : [text.trim()];
   };
 
-  // ── Helpers: skip items whose content is empty or still a default placeholder ──
+  // Helpers: skip items whose content is empty or still a default placeholder
   const PLACEHOLDER_PATTERNS = [
     /^new role \/ position$/i,
     /^company name$/i,
@@ -50,777 +52,206 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
     /^achievement details$/i,
   ];
 
-  const isPlaceholder = (val: string) =>
+  const isPlaceholder = (val?: string) =>
     !val || !val.trim() || PLACEHOLDER_PATTERNS.some((re) => re.test(val.trim()));
 
-  const filteredExperience = experience.filter(
+  const filteredExperience = (experience || []).filter(
     (e) => !isPlaceholder(e.title) || !isPlaceholder(e.company) || !isPlaceholder(e.description)
   );
-  const filteredProjects = projects.filter(
+  const filteredProjects = (projects || []).filter(
     (p) => !isPlaceholder(p.title) || !isPlaceholder(p.description)
   );
-  const filteredEducation = education.filter(
+  const filteredEducation = (education || []).filter(
     (e) => !isPlaceholder(e.degree) || !isPlaceholder(e.institution)
   );
-  const filteredCertifications = certifications.filter((c) => !isPlaceholder(c.name));
-  const filteredAchievements = achievements.filter((a) => !isPlaceholder(a.description));
-  const filteredSkills = skills.filter((s) => s && s.trim().length > 0);
+  const filteredCertifications = (certifications || []).filter((c) => !isPlaceholder(c.name));
+  const filteredAchievements = (achievements || []).filter((a) => !isPlaceholder(a.description));
+  const filteredHackathons = (hackathons || []).filter((h) => !isPlaceholder(h.title) || !isPlaceholder(h.description));
+  const filteredCourses = (courses || []).filter((c) => !isPlaceholder(c.name));
+  const filteredVolunteer = (volunteerExperience || []).filter((v) => !isPlaceholder(v));
+  const filteredPublications = (publications || []).filter((p) => !isPlaceholder(p));
 
-  /* ==========================================================================
-     TEMPLATE 1: CLASSIC ATS (Traditional, Centered, Timeless)
-     ========================================================================== */
-  if (activeTemplate === "classic") {
-    return (
-      <div
-        id="resume-preview-document"
-        className="bg-white text-gray-900 p-8 border border-gray-300 rounded shadow-sm max-w-2xl mx-auto font-serif text-left print:border-none print:shadow-none print:p-0 leading-normal"
-        style={{ minHeight: "842px" }}
-      >
-        {/* Header Section */}
-        <header className="border-b-2 border-gray-900 pb-3 mb-4 text-center">
-          <h1 className="text-2xl font-bold tracking-wider uppercase text-gray-900">
-            {personalInfo.fullName || "Your Full Name"}
-          </h1>
-          {targetRole && (
-            <p className="text-sm font-semibold text-gray-700 tracking-wide mt-1">
-              {targetRole}
-            </p>
-          )}
-          <div className="flex flex-wrap justify-center items-center gap-2 text-xs text-gray-600 mt-2 font-sans">
-            {personalInfo.email && <span>{personalInfo.email}</span>}
-            {personalInfo.phone && <span>&bull; {personalInfo.phone}</span>}
-            {personalInfo.location && <span>&bull; {personalInfo.location}</span>}
-          </div>
-        </header>
+  // Build Contact Line 1: Phone | Email | Location
+  const contactLine1 = [personalInfo?.phone, personalInfo?.email, personalInfo?.location]
+    .filter((item) => item && item.trim().length > 0)
+    .join(" | ");
 
-        {/* Professional Summary */}
-        {summary && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
-              Professional Summary
-            </h2>
-            <p className="text-xs text-gray-800 leading-relaxed">{summary}</p>
-          </section>
-        )}
+  // Build Contact Line 2: LinkedIn | GitHub | Portfolio
+  const cleanLink = (val?: string) => {
+    if (!val) return "";
+    return val.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  };
 
-        {/* Skills */}
-        {filteredSkills && filteredSkills.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
-              Technical Skills
-            </h2>
-            <p className="text-xs text-gray-800 leading-relaxed font-sans">
-              <strong>Core Competencies:</strong> {filteredSkills.join(", ")}
-            </p>
-          </section>
-        )}
+  const contactLine2 = [
+    cleanLink(personalInfo?.linkedin),
+    cleanLink(personalInfo?.github),
+    cleanLink(personalInfo?.portfolio),
+  ]
+    .filter((item) => item.length > 0)
+    .join(" | ");
 
-        {/* Experience */}
-        {filteredExperience && filteredExperience.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
-              Work Experience
-            </h2>
-            <div className="space-y-3">
-              {filteredExperience.map((exp, i) => (
-                <div key={exp.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline font-bold text-gray-900">
-                    <span>
-                      {exp.title} &mdash; <span className="font-semibold text-gray-800">{exp.company}</span>
-                    </span>
-                    <span className="text-gray-600 font-normal text-[11px] font-sans">{exp.duration}</span>
-                  </div>
-                  {exp.description && (
-                    <ul className="list-disc list-outside ml-4 mt-1 text-gray-700 space-y-0.5 leading-relaxed">
-                      {formatBulletPoints(exp.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+  // Technical Skills Categorization
+  const hasCategorized =
+    categorizedSkills &&
+    (categorizedSkills.languages?.length ||
+      categorizedSkills.frameworks?.length ||
+      categorizedSkills.tools?.length ||
+      categorizedSkills.databases?.length);
 
-        {/* Projects */}
-        {filteredProjects && filteredProjects.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
-              Key Projects
-            </h2>
-            <div className="space-y-3">
-              {filteredProjects.map((proj, i) => (
-                <div key={proj.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline font-bold text-gray-900">
-                    <span>{proj.title}</span>
-                    {proj.technologies && (
-                      <span className="text-[11px] font-sans font-normal text-gray-600">
-                        [{proj.technologies}]
-                      </span>
-                    )}
-                  </div>
-                  {proj.description && (
-                    <ul className="list-disc list-outside ml-4 mt-1 text-gray-700 space-y-0.5 leading-relaxed">
-                      {formatBulletPoints(proj.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+  const flatSkillsList = (skills || []).filter((s) => s && s.trim().length > 0);
 
-        {/* Education */}
-        {filteredEducation && filteredEducation.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
-              Education
-            </h2>
-            <div className="space-y-1.5">
-              {filteredEducation.map((edu, i) => (
-                <div key={edu.id || i} className="flex justify-between items-baseline text-xs">
-                  <div>
-                    <span className="font-bold text-gray-900">{edu.degree}</span>
-                    <span className="text-gray-700">, {edu.institution}</span>
-                  </div>
-                  <span className="text-gray-600 text-[11px] font-sans">{edu.year}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+  // Styling variant - pure ATS, clean Docs typography
+  const isSerif = templateId === "classic" || templateId === "executive";
+  const fontFamilyClass = isSerif ? "font-serif" : "font-sans";
 
-        {/* Certifications */}
-        {filteredCertifications && filteredCertifications.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
-              Certifications
-            </h2>
-            <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-              {filteredCertifications.map((cert, i) => (
-                <li key={cert.id || i}>
-                  <span className="font-semibold text-gray-900">{cert.name}</span>
-                  {cert.issuer && <span className="text-gray-600"> &mdash; {cert.issuer}</span>}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Achievements */}
-        {filteredAchievements && filteredAchievements.length > 0 && (
-          <section className="mb-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-gray-900 border-b border-gray-400 pb-1 mb-1.5 font-sans">
-              Honors & Achievements
-            </h2>
-            <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-              {filteredAchievements.map((ach, i) => (
-                <li key={ach.id || i}>{ach.description}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-      </div>
-    );
-  }
-
-  /* ==========================================================================
-     TEMPLATE 2: MODERN TECH (Clean, Left-Aligned, Blue Accent)
-     ========================================================================== */
-  if (activeTemplate === "modern") {
-    return (
-      <div
-        id="resume-preview-document"
-        className="bg-white text-gray-900 p-8 border border-gray-300 rounded shadow-sm max-w-2xl mx-auto font-sans text-left print:border-none print:shadow-none print:p-0"
-        style={{ minHeight: "842px" }}
-      >
-        {/* Modern Header */}
-        <header className="border-b-2 border-blue-600 pb-4 mb-5">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
-              {personalInfo.fullName || "Your Full Name"}
-            </h1>
-            {targetRole && (
-              <span className="inline-block self-start sm:self-auto text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded">
-                {targetRole}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 mt-2">
-            {personalInfo.email && <span className="font-medium">{personalInfo.email}</span>}
-            {personalInfo.phone && <span>&bull; {personalInfo.phone}</span>}
-            {personalInfo.location && <span>&bull; {personalInfo.location}</span>}
-          </div>
-        </header>
-
-        {/* Professional Summary */}
-        {summary && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-1.5 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Professional Summary
-            </h2>
-            <p className="text-xs text-gray-700 leading-relaxed pl-3.5">{summary}</p>
-          </section>
-        )}
-
-        {/* Skills */}
-        {filteredSkills && filteredSkills.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-2 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Technical Skills
-            </h2>
-            <div className="flex flex-wrap gap-1.5 pl-3.5">
-              {filteredSkills.map((skill, i) => (
-                <span
-                  key={i}
-                  className="bg-blue-50 border border-blue-200 text-blue-900 font-medium px-2 py-0.5 rounded text-[11px]"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Experience */}
-        {filteredExperience && filteredExperience.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-2 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Work Experience
-            </h2>
-            <div className="space-y-3 pl-3.5">
-              {filteredExperience.map((exp, i) => (
-                <div key={exp.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-gray-900 text-sm">
-                      {exp.title}
-                    </span>
-                    <span className="text-gray-500 font-medium text-[11px]">{exp.duration}</span>
-                  </div>
-                  <div className="text-blue-700 font-semibold text-xs mb-1">
-                    {exp.company}
-                  </div>
-                  {exp.description && (
-                    <ul className="list-disc list-outside ml-3.5 text-gray-600 space-y-0.5 leading-relaxed">
-                      {formatBulletPoints(exp.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Projects */}
-        {filteredProjects && filteredProjects.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-2 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Projects & Engineering Work
-            </h2>
-            <div className="space-y-3 pl-3.5">
-              {filteredProjects.map((proj, i) => (
-                <div key={proj.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-gray-900">{proj.title}</span>
-                  </div>
-                  {proj.technologies && (
-                    <div className="text-blue-600 font-medium text-[11px] my-0.5">
-                      Stack: {proj.technologies}
-                    </div>
-                  )}
-                  {proj.description && (
-                    <ul className="list-disc list-outside ml-3.5 text-gray-600 space-y-0.5 leading-relaxed">
-                      {formatBulletPoints(proj.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Education */}
-        {filteredEducation && filteredEducation.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-1.5 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Education
-            </h2>
-            <div className="space-y-1.5 pl-3.5">
-              {filteredEducation.map((edu, i) => (
-                <div key={edu.id || i} className="flex justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-gray-900">{edu.degree}</span>
-                    <span className="text-gray-600"> &bull; {edu.institution}</span>
-                  </div>
-                  <span className="text-gray-500 text-[11px]">{edu.year}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Certifications */}
-        {filteredCertifications && filteredCertifications.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-1.5 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Certifications
-            </h2>
-            <ul className="list-disc list-outside ml-7 text-xs text-gray-700 space-y-0.5">
-              {filteredCertifications.map((cert, i) => (
-                <li key={cert.id || i}>
-                  <span className="font-medium text-gray-900">{cert.name}</span>
-                  {cert.issuer && <span className="text-gray-500"> ({cert.issuer})</span>}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Achievements */}
-        {filteredAchievements && filteredAchievements.length > 0 && (
-          <section className="mb-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-blue-800 border-b border-gray-200 pb-1 mb-1.5 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Achievements
-            </h2>
-            <ul className="list-disc list-outside ml-7 text-xs text-gray-700 space-y-0.5">
-              {filteredAchievements.map((ach, i) => (
-                <li key={ach.id || i}>{ach.description}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-      </div>
-    );
-  }
-
-  /* ==========================================================================
-     TEMPLATE 3: CORPORATE EXECUTIVE (Teal Accent, Bold Structure)
-     ========================================================================== */
-  if (activeTemplate === "professional") {
-    return (
-      <div
-        id="resume-preview-document"
-        className="bg-white text-gray-900 p-8 border border-gray-300 rounded shadow-sm max-w-2xl mx-auto font-sans text-left print:border-none print:shadow-none print:p-0"
-        style={{ minHeight: "842px" }}
-      >
-        {/* Executive Header */}
-        <header className="border-b border-teal-800 pb-3 mb-4">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between">
-            <div>
-              <h1 className="text-2xl font-bold uppercase tracking-wide text-teal-950">
-                {personalInfo.fullName || "Your Full Name"}
-              </h1>
-              {targetRole && (
-                <p className="text-sm font-semibold text-teal-700 tracking-wider uppercase mt-0.5">
-                  {targetRole}
-                </p>
-              )}
-            </div>
-            <div className="text-right text-xs text-gray-600 mt-2 sm:mt-0 space-y-0.5 font-medium">
-              {personalInfo.email && <div>{personalInfo.email}</div>}
-              <div className="flex sm:justify-end gap-2 text-gray-500">
-                {personalInfo.phone && <span>{personalInfo.phone}</span>}
-                {personalInfo.phone && personalInfo.location && <span>|</span>}
-                {personalInfo.location && <span>{personalInfo.location}</span>}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Professional Summary */}
-        {summary && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
-              Executive Profile
-            </h2>
-            <p className="text-xs text-gray-700 leading-relaxed px-1">{summary}</p>
-          </section>
-        )}
-
-        {/* Skills */}
-        {filteredSkills && filteredSkills.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
-              Core Competencies & Skills
-            </h2>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs px-1 text-gray-800">
-              {filteredSkills.map((skill, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <span className="text-teal-700 font-bold">&rsaquo;</span>
-                  <span>{skill}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Experience */}
-        {filteredExperience && filteredExperience.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
-              Professional Experience
-            </h2>
-            <div className="space-y-3 px-1">
-              {filteredExperience.map((exp, i) => (
-                <div key={exp.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline font-bold text-gray-900">
-                    <span className="text-sm text-teal-950">{exp.title}</span>
-                    <span className="text-gray-500 font-normal text-[11px]">{exp.duration}</span>
-                  </div>
-                  <div className="font-semibold text-gray-700 text-xs mb-1">
-                    {exp.company}
-                  </div>
-                  {exp.description && (
-                    <ul className="list-disc list-outside ml-4 text-gray-600 space-y-0.5 leading-relaxed">
-                      {formatBulletPoints(exp.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Projects */}
-        {filteredProjects && filteredProjects.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
-              Key Initiatives & Projects
-            </h2>
-            <div className="space-y-3 px-1">
-              {filteredProjects.map((proj, i) => (
-                <div key={proj.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-gray-900">{proj.title}</span>
-                    {proj.technologies && (
-                      <span className="text-teal-700 text-[11px] font-medium">
-                        {proj.technologies}
-                      </span>
-                    )}
-                  </div>
-                  {proj.description && (
-                    <ul className="list-disc list-outside ml-4 mt-1 text-gray-600 space-y-0.5 leading-relaxed">
-                      {formatBulletPoints(proj.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Education */}
-        {filteredEducation && filteredEducation.length > 0 && (
-          <section className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
-              Education & Credentials
-            </h2>
-            <div className="space-y-1.5 px-1">
-              {filteredEducation.map((edu, i) => (
-                <div key={edu.id || i} className="flex justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-gray-900">{edu.degree}</span>
-                    <span className="text-gray-600"> &bull; {edu.institution}</span>
-                  </div>
-                  <span className="text-gray-500 text-[11px]">{edu.year}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Certifications & Achievements */}
-        {(filteredCertifications?.length > 0 || filteredAchievements?.length > 0) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-            {filteredCertifications && filteredCertifications.length > 0 && (
-              <section>
-                <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
-                  Certifications
-                </h2>
-                <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-                  {filteredCertifications.map((cert, i) => (
-                    <li key={cert.id || i}>
-                      <span className="font-medium">{cert.name}</span>
-                      {cert.issuer && <span className="text-gray-500"> ({cert.issuer})</span>}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {filteredAchievements && filteredAchievements.length > 0 && (
-              <section>
-                <h2 className="text-xs font-bold uppercase tracking-widest text-teal-900 bg-teal-50 px-2 py-1 border-l-4 border-teal-700 mb-2">
-                  Achievements
-                </h2>
-                <ul className="list-disc list-outside ml-4 text-xs text-gray-700 space-y-0.5">
-                  {filteredAchievements.map((ach, i) => (
-                    <li key={ach.id || i}>{ach.description}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  /* ==========================================================================
-     TEMPLATE 4: TECHNICAL DENSE (High Density, Indigo Accent, Compact)
-     ========================================================================== */
-  if (activeTemplate === "compact") {
-    return (
-      <div
-        id="resume-preview-document"
-        className="bg-white text-gray-900 p-6 border border-gray-300 rounded shadow-sm max-w-2xl mx-auto font-sans text-left print:border-none print:shadow-none print:p-0 leading-snug"
-        style={{ minHeight: "842px" }}
-      >
-        {/* Compact Header */}
-        <header className="border-b border-indigo-200 pb-2.5 mb-3 flex flex-col sm:flex-row sm:items-baseline justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-gray-900">
-              {personalInfo.fullName || "Your Full Name"}
-            </h1>
-            {targetRole && (
-              <p className="text-xs font-bold text-indigo-700 mt-0.5">
-                {targetRole}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2 text-[11px] text-gray-600 mt-1 sm:mt-0 font-mono">
-            {personalInfo.email && <span>{personalInfo.email}</span>}
-            {personalInfo.phone && <span>| {personalInfo.phone}</span>}
-            {personalInfo.location && <span>| {personalInfo.location}</span>}
-          </div>
-        </header>
-
-        {/* Summary */}
-        {summary && (
-          <section className="mb-3">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
-              // Summary
-            </h2>
-            <p className="text-xs text-gray-700 leading-tight">{summary}</p>
-          </section>
-        )}
-
-        {/* Skills */}
-        {filteredSkills && filteredSkills.length > 0 && (
-          <section className="mb-3">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
-              // Technical Stack
-            </h2>
-            <div className="text-xs text-gray-800 leading-normal">
-              {filteredSkills.map((skill, i) => (
-                <span
-                  key={i}
-                  className="inline-block bg-indigo-50 text-indigo-900 border border-indigo-100 px-1.5 py-0.2 rounded mr-1 mb-1 text-[11px] font-medium"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Experience */}
-        {filteredExperience && filteredExperience.length > 0 && (
-          <section className="mb-3">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1.5 font-mono">
-              // Experience
-            </h2>
-            <div className="space-y-2.5">
-              {filteredExperience.map((exp, i) => (
-                <div key={exp.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-gray-900">
-                      {exp.title} &middot; <span className="text-indigo-800 font-semibold">{exp.company}</span>
-                    </span>
-                    <span className="text-gray-500 text-[11px] font-mono">{exp.duration}</span>
-                  </div>
-                  {exp.description && (
-                    <ul className="list-disc list-outside ml-4 mt-0.5 text-gray-600 space-y-0.5 leading-snug">
-                      {formatBulletPoints(exp.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Projects */}
-        {filteredProjects && filteredProjects.length > 0 && (
-          <section className="mb-3">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1.5 font-mono">
-              // Projects
-            </h2>
-            <div className="space-y-2">
-              {filteredProjects.map((proj, i) => (
-                <div key={proj.id || i} className="text-xs">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-gray-900">{proj.title}</span>
-                    {proj.technologies && (
-                      <span className="text-[10px] text-indigo-600 font-mono">
-                        Tech: {proj.technologies}
-                      </span>
-                    )}
-                  </div>
-                  {proj.description && (
-                    <ul className="list-disc list-outside ml-4 mt-0.5 text-gray-600 space-y-0.5 leading-snug">
-                      {formatBulletPoints(proj.description).map((pt, idx) => (
-                        <li key={idx}>{pt}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Education */}
-        {filteredEducation && filteredEducation.length > 0 && (
-          <section className="mb-3">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
-              // Education
-            </h2>
-            <div className="space-y-1">
-              {filteredEducation.map((edu, i) => (
-                <div key={edu.id || i} className="flex justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-gray-900">{edu.degree}</span>
-                    <span className="text-gray-600">, {edu.institution}</span>
-                  </div>
-                  <span className="text-gray-500 text-[11px] font-mono">{edu.year}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Certifications & Achievements */}
-        {(filteredCertifications?.length > 0 || filteredAchievements?.length > 0) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {filteredCertifications && filteredCertifications.length > 0 && (
-              <section>
-                <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
-                  // Certifications
-                </h2>
-                <ul className="list-disc list-outside ml-4 text-[11px] text-gray-700 space-y-0.5">
-                  {filteredCertifications.map((cert, i) => (
-                    <li key={cert.id || i}>
-                      {cert.name} {cert.issuer && <span className="text-gray-500">({cert.issuer})</span>}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {filteredAchievements && filteredAchievements.length > 0 && (
-              <section>
-                <h2 className="text-[11px] font-bold uppercase tracking-wider text-indigo-900 border-b border-indigo-100 pb-0.5 mb-1 font-mono">
-                  // Achievements
-                </h2>
-                <ul className="list-disc list-outside ml-4 text-[11px] text-gray-700 space-y-0.5">
-                  {filteredAchievements.map((ach, i) => (
-                    <li key={ach.id || i}>{ach.description}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  /* ==========================================================================
-     TEMPLATE 5: MINIMALIST CLEAN (Understated, Ample Whitespace)
-     ========================================================================== */
   return (
     <div
       id="resume-preview-document"
-      className="bg-white text-gray-900 p-8 border border-gray-200 rounded shadow-sm max-w-2xl mx-auto font-sans text-left print:border-none print:shadow-none print:p-0 leading-relaxed"
-      style={{ minHeight: "842px" }}
+      className={`bg-white text-black p-8 sm:p-10 border border-gray-200 rounded-lg shadow-sm max-w-[800px] mx-auto text-left leading-relaxed ${fontFamilyClass} print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none`}
+      style={{
+        minHeight: "1056px",
+        color: "#111827",
+        backgroundColor: "#ffffff",
+      }}
     >
-      {/* Clean Minimal Header */}
-      <header className="mb-6">
-        <h1 className="text-3xl font-light tracking-tight text-gray-900">
-          {personalInfo.fullName || "Your Full Name"}
+      {/* =========================================================================
+          1. HEADER (Centered, Single Column, No Icons, No Graphics)
+          ========================================================================= */}
+      <header className="border-b border-gray-300 pb-3 mb-4 text-center">
+        <h1 className="text-2xl font-bold tracking-tight uppercase text-black">
+          {personalInfo?.fullName || "Your Full Name"}
         </h1>
+
         {targetRole && (
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-1">
+          <p className="text-sm font-semibold text-gray-800 mt-1">
             {targetRole}
           </p>
         )}
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200">
-          {personalInfo.email && <span>{personalInfo.email}</span>}
-          {personalInfo.phone && <span>/ {personalInfo.phone}</span>}
-          {personalInfo.location && <span>/ {personalInfo.location}</span>}
-        </div>
+
+        {contactLine1 && (
+          <p className="text-xs text-gray-700 mt-1.5 font-normal tracking-wide">
+            {contactLine1}
+          </p>
+        )}
+
+        {contactLine2 && (
+          <p className="text-xs text-gray-700 mt-0.5 font-normal tracking-wide">
+            {contactLine2}
+          </p>
+        )}
       </header>
 
-      {/* Professional Summary */}
-      {summary && (
-        <section className="mb-5">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
-            Profile
+      {/* =========================================================================
+          2. PROFESSIONAL SUMMARY (2-3 lines, role-targeted)
+          ========================================================================= */}
+      {summary && summary.trim().length > 0 && (
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+            Professional Summary
           </h2>
-          <p className="text-xs text-gray-700 leading-relaxed">{summary}</p>
-        </section>
-      )}
-
-      {/* Skills */}
-      {filteredSkills && filteredSkills.length > 0 && (
-        <section className="mb-5">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
-            Skills & Expertise
-          </h2>
-          <p className="text-xs text-gray-800 leading-relaxed">
-            {filteredSkills.join("  &bull;  ")}
+          <p className="text-xs text-gray-800 leading-relaxed text-justify">
+            {summary.trim()}
           </p>
         </section>
       )}
 
-      {/* Experience */}
+      {/* =========================================================================
+          3. EDUCATION (Standard ATS format)
+          ========================================================================= */}
+      {filteredEducation && filteredEducation.length > 0 && (
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-2">
+            Education
+          </h2>
+          <div className="space-y-2">
+            {filteredEducation.map((edu, i) => (
+              <div key={edu.id || i} className="text-xs">
+                <div className="flex justify-between items-baseline font-bold text-black">
+                  <span>{edu.degree}</span>
+                  {edu.year && (
+                    <span className="font-normal text-gray-600 text-[11px]">{edu.year}</span>
+                  )}
+                </div>
+                <div className="text-gray-800 flex justify-between items-baseline mt-0.5">
+                  <span>{edu.institution}</span>
+                  {edu.cgpa && (
+                    <span className="text-gray-600 text-[11px]">CGPA: {edu.cgpa}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* =========================================================================
+          4. TECHNICAL SKILLS (Text-based categories, NO bars or ratings)
+          ========================================================================= */}
+      {((hasCategorized) || flatSkillsList.length > 0) && (
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+            Technical Skills
+          </h2>
+          <div className="text-xs text-gray-800 space-y-1">
+            {hasCategorized ? (
+              <>
+                {categorizedSkills?.languages && categorizedSkills.languages.length > 0 && (
+                  <p>
+                    <span className="font-bold text-black">Languages: </span>
+                    {categorizedSkills.languages.join(", ")}
+                  </p>
+                )}
+                {categorizedSkills?.frameworks && categorizedSkills.frameworks.length > 0 && (
+                  <p>
+                    <span className="font-bold text-black">Web &amp; Frameworks: </span>
+                    {categorizedSkills.frameworks.join(", ")}
+                  </p>
+                )}
+                {categorizedSkills?.databases && categorizedSkills.databases.length > 0 && (
+                  <p>
+                    <span className="font-bold text-black">Databases: </span>
+                    {categorizedSkills.databases.join(", ")}
+                  </p>
+                )}
+                {categorizedSkills?.tools && categorizedSkills.tools.length > 0 && (
+                  <p>
+                    <span className="font-bold text-black">Tools &amp; Platforms: </span>
+                    {categorizedSkills.tools.join(", ")}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>
+                <span className="font-bold text-black">Core Competencies: </span>
+                {flatSkillsList.join(", ")}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* =========================================================================
+          5. WORK EXPERIENCE (Reverse chronological, bullet points)
+          ========================================================================= */}
       {filteredExperience && filteredExperience.length > 0 && (
-        <section className="mb-5">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
-            Experience
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-2">
+            Work Experience
           </h2>
           <div className="space-y-3">
             {filteredExperience.map((exp, i) => (
               <div key={exp.id || i} className="text-xs">
-                <div className="flex justify-between items-baseline font-medium text-gray-900">
-                  <span>
-                    <span className="font-semibold">{exp.title}</span>, {exp.company}
-                  </span>
-                  <span className="text-gray-400 font-normal text-[11px]">{exp.duration}</span>
+                <div className="flex justify-between items-baseline">
+                  <span className="font-bold text-black">{exp.title}</span>
+                  {exp.duration && (
+                    <span className="text-gray-600 font-normal text-[11px]">{exp.duration}</span>
+                  )}
                 </div>
+                {exp.company && (
+                  <div className="font-medium text-gray-800 mb-1">{exp.company}</div>
+                )}
                 {exp.description && (
-                  <ul className="list-disc list-outside ml-4 mt-1 text-gray-600 space-y-0.5 leading-relaxed">
+                  <ul className="list-disc list-outside ml-4 text-gray-800 space-y-1 leading-relaxed">
                     {formatBulletPoints(exp.description).map((pt, idx) => (
                       <li key={idx}>{pt}</li>
                     ))}
@@ -832,25 +263,27 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         </section>
       )}
 
-      {/* Projects */}
+      {/* =========================================================================
+          6. PROJECTS (Name, Technologies, Bullet points)
+          ========================================================================= */}
       {filteredProjects && filteredProjects.length > 0 && (
-        <section className="mb-5">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-2">
             Projects
           </h2>
           <div className="space-y-3">
             {filteredProjects.map((proj, i) => (
               <div key={proj.id || i} className="text-xs">
-                <div className="flex justify-between items-baseline">
-                  <span className="font-semibold text-gray-900">{proj.title}</span>
-                  {proj.technologies && (
-                    <span className="text-gray-400 text-[11px]">
-                      {proj.technologies}
-                    </span>
-                  )}
+                <div className="font-bold text-black">
+                  {proj.title}
                 </div>
+                {proj.technologies && (
+                  <div className="text-gray-700 italic text-[11px] mb-1">
+                    {proj.technologies}
+                  </div>
+                )}
                 {proj.description && (
-                  <ul className="list-disc list-outside ml-4 mt-1 text-gray-600 space-y-0.5 leading-relaxed">
+                  <ul className="list-disc list-outside ml-4 text-gray-800 space-y-1 leading-relaxed">
                     {formatBulletPoints(proj.description).map((pt, idx) => (
                       <li key={idx}>{pt}</li>
                     ))}
@@ -862,52 +295,98 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
         </section>
       )}
 
-      {/* Education */}
-      {filteredEducation && filteredEducation.length > 0 && (
-        <section className="mb-5">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
-            Education
-          </h2>
-          <div className="space-y-1.5">
-            {filteredEducation.map((edu, i) => (
-              <div key={edu.id || i} className="flex justify-between text-xs">
-                <div>
-                  <span className="font-semibold text-gray-900">{edu.degree}</span>
-                  <span className="text-gray-500">, {edu.institution}</span>
-                </div>
-                <span className="text-gray-400 text-[11px]">{edu.year}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Certifications */}
+      {/* =========================================================================
+          7. CERTIFICATIONS (Format: Name — Issuer | Year)
+          ========================================================================= */}
       {filteredCertifications && filteredCertifications.length > 0 && (
         <section className="mb-4">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
             Certifications
           </h2>
-          <ul className="list-disc list-outside ml-4 text-xs text-gray-600 space-y-0.5">
+          <ul className="text-xs text-gray-800 space-y-1">
             {filteredCertifications.map((cert, i) => (
-              <li key={cert.id || i}>
-                <span className="font-medium text-gray-800">{cert.name}</span>
-                {cert.issuer && <span className="text-gray-400"> ({cert.issuer})</span>}
+              <li key={cert.id || i} className="list-none">
+                <span className="font-medium text-black">{cert.name}</span>
+                {cert.issuer && <span> — {cert.issuer}</span>}
+                {cert.year && <span> | {cert.year}</span>}
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      {/* Achievements */}
+      {/* =========================================================================
+          8. ACHIEVEMENTS (Normal bullet points)
+          ========================================================================= */}
       {filteredAchievements && filteredAchievements.length > 0 && (
-        <section className="mb-2">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
             Achievements
           </h2>
-          <ul className="list-disc list-outside ml-4 text-xs text-gray-600 space-y-0.5">
+          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
             {filteredAchievements.map((ach, i) => (
               <li key={ach.id || i}>{ach.description}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* =========================================================================
+          9. OPTIONAL SECTIONS (Only rendered if user has entries)
+          ========================================================================= */}
+      {filteredHackathons.length > 0 && (
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+            Hackathons &amp; Competitions
+          </h2>
+          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+            {filteredHackathons.map((h, i) => (
+              <li key={h.id || i}>
+                <span className="font-bold text-black">{h.title}</span>
+                {h.description && <span>: {h.description}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {filteredCourses.length > 0 && (
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+            Courses &amp; Training
+          </h2>
+          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+            {filteredCourses.map((c, i) => (
+              <li key={c.id || i}>
+                <span className="font-medium text-black">{c.name}</span>
+                {c.institution && <span> — {c.institution}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {filteredVolunteer.length > 0 && (
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+            Volunteer Experience
+          </h2>
+          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+            {filteredVolunteer.map((v, i) => (
+              <li key={i}>{v}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {filteredPublications.length > 0 && (
+        <section className="mb-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+            Publications
+          </h2>
+          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+            {filteredPublications.map((p, i) => (
+              <li key={i}>{p}</li>
             ))}
           </ul>
         </section>

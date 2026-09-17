@@ -5,6 +5,9 @@ export interface PersonalInfo {
   email: string;
   phone: string;
   location: string;
+  linkedin?: string;
+  github?: string;
+  portfolio?: string;
 }
 
 export interface Education {
@@ -12,6 +15,7 @@ export interface Education {
   degree: string;
   institution: string;
   year: string;
+  cgpa?: string;
 }
 
 export interface Experience {
@@ -33,6 +37,7 @@ export interface Certification {
   id: string;
   name: string;
   issuer?: string;
+  year?: string;
 }
 
 export interface Achievement {
@@ -40,17 +45,44 @@ export interface Achievement {
   description: string;
 }
 
+export interface CategorizedSkills {
+  languages?: string[];
+  frameworks?: string[];
+  tools?: string[];
+  databases?: string[];
+}
+
+export interface Hackathon {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface Course {
+  id: string;
+  name: string;
+  institution?: string;
+}
+
 export interface ResumeData {
   personalInfo: PersonalInfo;
   targetRole: string;
+  jobDescription?: string;
   rawText: string;
   summary: string;
   education: Education[];
   experience: Experience[];
+  internships?: Experience[];
   projects: Project[];
-  skills: string[];
+  skills: string[]; // flat list for backwards compatibility
+  categorizedSkills?: CategorizedSkills;
   certifications: Certification[];
   achievements: Achievement[];
+  hackathons?: Hackathon[];
+  volunteerExperience?: string[];
+  publications?: string[];
+  courses?: Course[];
   templateId?: string;
 }
+
 

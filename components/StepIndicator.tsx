@@ -8,9 +8,9 @@ interface StepIndicatorProps {
 
 const STEPS = [
   { step: 1, label: "Information", href: "/input" },
-  { step: 2, label: "Target Role", href: "/role" },
-  { step: 3, label: "Template", href: "/templates" },
-  { step: 4, label: "Edit & AI", href: "/editor" },
+  { step: 2, label: "Role & JD", href: "/role" },
+  { step: 3, label: "Review Info", href: "/organize" },
+  { step: 4, label: "Edit Resume", href: "/editor" },
   { step: 5, label: "Preview & Export", href: "/preview" },
 ];
 

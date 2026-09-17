@@ -252,6 +252,7 @@ export function extractSkills(text: string): string[] {
 }
 
 // ==========================================
+// ==========================================
 // 7. EXTRACT EDUCATION
 // ==========================================
 export function extractEducation(text: string): Education[] {
@@ -260,13 +261,28 @@ export function extractEducation(text: string): Education[] {
   const educationList: Education[] = [];
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-  const eduStart = lines.findIndex((l) => /^(?:EDUCATION|ACADEMICS|ACADEMIC\s+BACKGROUND|QUALIFICATIONS)\b/i.test(l));
+  const eduStart = lines.findIndex((l) =>
+    /^(?:EDUCATION|ACADEMICS|ACADEMIC\s+BACKGROUND|QUALIFICATIONS|EDUCATION\s+(?:&|AND)\s+TRAINING)\b/i.test(l)
+  );
+
+  const yearRegex =
+    /(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+)?(?:19|20)\d{2}\s*[-–—to]+\s*(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+)?(?:19|20)\d{2}|Present|Current|Expected\s+(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+)?(?:19|20)\d{2}))|\bExpected\s+(?:[A-Za-z]+\s+)?(?:19|20)\d{2}\b|\b(?:May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*(?:19|20)\d{2}\b|\b(?:19|20)\d{2}\b|\b(?:May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+20XX\b/i;
+
+  const degreeRegex =
+    /\b(?:Bachelor|Master|B\.?A\.?|B\.?E\.?|B\.?Tech|B\.?Sc|M\.?S\.?|M\.?Tech|Ph\.?D|Associate|Diploma|High\s+School|Senior\s+School|Certificate|Graduated|Degree)\b/i;
+
+  const instRegex =
+    /\b(?:University|College|Institute|School|Vidyalaya|Academy|Polytechnic|Campus)\b/i;
 
   if (eduStart !== -1) {
     const eduLines: string[] = [];
     for (let i = eduStart + 1; i < lines.length; i++) {
       const line = lines[i];
-      if (/^(?:PROJECTS|KEY\s+SKILLS|ADDITIONAL\s+SKILLS|SKILLS|TECHNICAL\s+SKILLS|PROFESSIONAL\s+EXPERIENCE|EXPERIENCE|WORK\s+EXPERIENCE|PROFILE|CONTACT|COURSEWORK|EXTRACURRICULAR|CERTIFICATIONS|ACHIEVEMENTS)\b/i.test(line)) {
+      if (
+        /^(?:PROJECTS|KEY\s+SKILLS|ADDITIONAL\s+SKILLS|SKILLS|TECHNICAL\s+SKILLS|PROFESSIONAL\s+EXPERIENCE|EXPERIENCE|WORK\s+EXPERIENCE|PROFILE|CONTACT|COURSEWORK|EXTRACURRICULAR|CERTIFICATIONS|ACHIEVEMENTS|AWARDS)\b/i.test(
+          line
+        )
+      ) {
         break;
       }
       eduLines.push(line);
@@ -277,9 +293,38 @@ export function extractEducation(text: string): Education[] {
     let currentYear = "";
 
     eduLines.forEach((line) => {
-      const isDegree = /Bachelor|Master|B\.?A\.?|B\.?E\.?|B\.?Tech|B\.?Sc|M\.?S\.?|M\.?Tech|Senior\s+School|Certificate|Diploma|High\s+School|Examination|Degree|Graduated/i.test(line);
-      const isInst = /University|College|Institute|School|Vidyalaya|Academy/i.test(line);
-      const yearMatch = line.match(/(?:(?:19|20)\d{2}\s*[-–—]\s*(?:(?:19|20)\d{2}|Present|Current|Expected\s+(?:May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)?\s*\d{4}))|Expected\s+\w+\s+\d{4}|\b(?:May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Spring|Fall)?\s*(?:19|20)\d{2}\b|\b\d{2}\s+\d{4}\s*[-–—]\s*\d{2}\s+\d{4}\b|\b(?:19|20)\d{2}\b|\b(?:May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+20XX\b/i);
+      const isDegree = degreeRegex.test(line);
+      const isInst = instRegex.test(line);
+      const yearMatch = line.match(yearRegex);
+
+      // Single-line format check (e.g. "River Brook University - Chicago, IL | Bachelor of Arts | 2020")
+      if (line.includes("|") || (line.includes(" - ") && isDegree && isInst)) {
+        const parts = line.split(/[|•–—]/).map((p) => p.trim());
+        let partDegree = "";
+        let partInst = "";
+        let partYear = "";
+
+        parts.forEach((part) => {
+          if (degreeRegex.test(part) && !partDegree) {
+            partDegree = part;
+          } else if (instRegex.test(part) && !partInst) {
+            partInst = part;
+          } else if (yearRegex.test(part) && !partYear) {
+            const ym = part.match(yearRegex);
+            partYear = ym ? ym[0].trim() : part;
+          }
+        });
+
+        if (partInst || partDegree) {
+          educationList.push({
+            id: `edu-${educationList.length + 1}`,
+            institution: partInst || partDegree,
+            degree: partDegree || partInst || "Degree / Course",
+            year: partYear || "",
+          });
+          return;
+        }
+      }
 
       if (isInst && !currentInst) {
         currentInst = line.replace(/\|.*$/, "").trim();
@@ -303,24 +348,31 @@ export function extractEducation(text: string): Education[] {
         currentYear = "";
       }
     });
+
+    if (currentInst || currentDegree) {
+      educationList.push({
+        id: `edu-${educationList.length + 1}`,
+        institution: currentInst || currentDegree,
+        degree: currentDegree || "Degree / Course",
+        year: currentYear || "",
+      });
+    }
   }
 
-  // Check specific degrees in text if not caught by section
+  // Fallback: if no section detected or empty, scan document lines for institution or degree
   if (educationList.length === 0) {
-    if (text.includes("Bachelor of Arts in English") || text.includes("River Brook University")) {
-      educationList.push({
-        id: "edu-1",
-        degree: "Bachelor of Arts in English (Graduated Magna Cum Laude)",
-        institution: "River Brook University - Chicago, IL",
-        year: "May 20XX",
-      });
-    } else if (text.includes("Goa College of Engineering") || text.includes("Bachelor of Engineering")) {
-      educationList.push({
-        id: "edu-1",
-        degree: "Bachelor of Engineering in Information & Technology - CGPA - 8.1/10",
-        institution: "Goa College of Engineering",
-        year: "Expected May 2027",
-      });
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (instRegex.test(line) && !line.includes("@") && line.length < 100) {
+        const yearMatch = line.match(yearRegex);
+        educationList.push({
+          id: `edu-${educationList.length + 1}`,
+          institution: line.replace(yearRegex, "").replace(/[|•–—,-]+$/, "").trim(),
+          degree: "Degree / Course",
+          year: yearMatch ? yearMatch[0].trim() : "",
+        });
+        if (educationList.length >= 2) break;
+      }
     }
   }
 
@@ -351,42 +403,17 @@ export function extractExperience(text: string, targetRole: string): Experience[
   }
 
   const experienceList: Experience[] = [];
-
-  // Parse Denice Harris / Standard multi-role format
-  if (text.includes("Redford & Sons") || text.includes("Bright Spot Ltd") || text.includes("Suntrust Financial")) {
-    if (text.includes("Redford & Sons")) {
-      experienceList.push({
-        id: "exp-1",
-        title: "Administrative Assistant",
-        company: "Redford & Sons, Chicago, IL",
-        duration: "Sep 20XX – Present",
-        description: "Schedule and coordinate meetings, appointments, and travel arrangements for supervisors and managers. Trained 2 administrative assistants during expansion. Developed new filing and organizational practices saving $3,000/year.",
-      });
-    }
-    if (text.includes("Bright Spot Ltd")) {
-      experienceList.push({
-        id: "exp-2",
-        title: "Secretary",
-        company: "Bright Spot Ltd - Boston, MA",
-        duration: "Jun 20XX - Aug 20XX",
-        description: "Typed documents such as correspondence, drafts, memos, and emails, and prepared 3 reports weekly for management. Purchased and maintained office supply inventories.",
-      });
-    }
-    if (text.includes("Suntrust Financial")) {
-      experienceList.push({
-        id: "exp-3",
-        title: "Secretary",
-        company: "Suntrust Financial - Chicago, IL",
-        duration: "Dec 20XX - May 20XX",
-        description: "Recorded, transcribed and distributed weekly meetings. Answered upwards of 20 phone calls daily, taking detailed messages.",
-      });
-    }
-    return experienceList;
-  }
-
-  // Dynamic parse from PROFESSIONAL EXPERIENCE or WORK EXPERIENCE section
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  const expStart = lines.findIndex((l) => /^(?:PROFESSIONAL\s+EXPERIENCE|WORK\s+EXPERIENCE|EXPERIENCE|EMPLOYMENT)\b/i.test(l));
+
+  const expStart = lines.findIndex((l) =>
+    /^(?:PROFESSIONAL\s+EXPERIENCE|WORK\s+EXPERIENCE|EXPERIENCE|EMPLOYMENT(?:\s+HISTORY)?|WORK\s+HISTORY|RELEVANT\s+EXPERIENCE)\b/i.test(l)
+  );
+
+  const datePattern =
+    /(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+)?(?:19|20)\d{2}\s*[-–—to]+\s*(?:(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+)?(?:19|20)\d{2}|Present|Current|Ongoing|20XX))|\b(?:19|20)\d{2}\s*[-–—to]+\s*(?:19|20)\d{2}\b/i;
+
+  const roleKeywords =
+    /\b(?:Engineer|Developer|Manager|Assistant|Analyst|Consultant|Specialist|Director|Lead|Designer|Intern|Officer|Coordinator|Administrator|Secretary|Associate|Architect|Representative|Scientist|Programmer|Executive)\b/i;
 
   if (expStart !== -1) {
     let currentTitle = "";
@@ -394,48 +421,114 @@ export function extractExperience(text: string, targetRole: string): Experience[
     let currentDuration = "";
     let currentBullets: string[] = [];
 
+    const saveCurrentJob = () => {
+      if (currentTitle || currentCompany) {
+        experienceList.push({
+          id: `exp-${experienceList.length + 1}`,
+          title: currentTitle || targetRole || "Professional",
+          company: currentCompany || "Company",
+          duration: currentDuration || "",
+          description: currentBullets.join(" ").trim(),
+        });
+        currentTitle = "";
+        currentCompany = "";
+        currentDuration = "";
+        currentBullets = [];
+      }
+    };
+
     for (let i = expStart + 1; i < lines.length; i++) {
       const line = lines[i];
-      if (/^(?:EDUCATION|KEY\s+SKILLS|ADDITIONAL\s+SKILLS|SKILLS|TECHNICAL\s+SKILLS|PROFILE|CONTACT|PROJECTS|CERTIFICATIONS|ACHIEVEMENTS)\b/i.test(line)) {
+
+      // End of experience section check
+      if (
+        /^(?:EDUCATION|ACADEMICS|KEY\s+SKILLS|ADDITIONAL\s+SKILLS|SKILLS|TECHNICAL\s+SKILLS|PROFILE|CONTACT|PROJECTS|CERTIFICATIONS|ACHIEVEMENTS|AWARDS|EXTRACURRICULAR|PUBLICATIONS)\b/i.test(
+          line
+        )
+      ) {
         break;
       }
 
-      const isBullet = /^[•\-\*]\s*/.test(line);
-      const isCompanyLine = line.includes("|") || line.includes("–") || line.includes(" - ") || /(?:Present|20\d{2}|19\d{2}|20XX)/i.test(line);
+      const isBullet = /^[•\-\*Ó‡R\d+.)]\s*/.test(line);
+      const cleanLine = line.replace(/^[•\-\*Ó‡R\d+.)]\s*/, "").trim();
 
       if (isBullet) {
-        currentBullets.push(line.replace(/^[•\-\*]\s*/, ""));
-      } else if (isCompanyLine && currentTitle) {
-        currentCompany = line.replace(/\|.*$/, "").trim();
-        const durMatch = line.match(/\|(.*)$/) || line.match(/[-–](.*)$/);
-        currentDuration = durMatch ? durMatch[1].trim() : "";
-      } else if (line.length > 2 && line.length < 50 && !line.includes("@")) {
-        // Save previous job entry if exists
-        if (currentTitle) {
-          experienceList.push({
-            id: `exp-${experienceList.length + 1}`,
-            title: currentTitle,
-            company: currentCompany || "Company",
-            duration: currentDuration || "",
-            description: currentBullets.join(" "),
-          });
-          currentBullets = [];
-          currentCompany = "";
-          currentDuration = "";
-        }
-        currentTitle = line;
+        currentBullets.push(cleanLine);
+        continue;
       }
+
+      const hasDate = datePattern.test(line);
+
+      // Check for delimited single header line: "Title | Company | Date" or "Company | City | Date"
+      if (line.includes("|") || line.includes(" – ") || line.includes(" - ")) {
+        const parts = line.split(/[|•–]/).map((p) => p.trim());
+        const partWithDate = parts.find((p) => datePattern.test(p));
+        const nonDateParts = parts.filter((p) => !datePattern.test(p));
+
+        if (partWithDate || nonDateParts.some((p) => roleKeywords.test(p))) {
+          // If we already had a job accumulating descriptions, finalize it
+          if (currentTitle && currentBullets.length > 0) {
+            saveCurrentJob();
+          }
+
+          if (currentTitle && !currentCompany) {
+            // This line provides company and date for the already identified title
+            currentCompany = nonDateParts.join(", ");
+            if (partWithDate) {
+              const dm = partWithDate.match(datePattern);
+              currentDuration = dm ? dm[0].trim() : partWithDate;
+            }
+            continue;
+          }
+
+          // New job header line
+          const detectedTitle = nonDateParts.find((p) => roleKeywords.test(p)) || nonDateParts[0] || "";
+          const detectedCompany = nonDateParts.find((p) => p !== detectedTitle) || nonDateParts[1] || "";
+
+          currentTitle = detectedTitle;
+          currentCompany = detectedCompany;
+          if (partWithDate) {
+            const dm = partWithDate.match(datePattern);
+            currentDuration = dm ? dm[0].trim() : partWithDate;
+          }
+          continue;
+        }
+      }
+
+      // Standalone date line
+      if (hasDate && line.length < 50) {
+        const dm = line.match(datePattern);
+        currentDuration = dm ? dm[0].trim() : line;
+        continue;
+      }
+
+      // Standalone Title or Company line
+      if (line.length < 60 && !line.includes("@") && !line.endsWith(".")) {
+        if (currentTitle && currentBullets.length > 0) {
+          saveCurrentJob();
+        }
+
+        if (!currentTitle) {
+          currentTitle = line;
+        } else if (!currentCompany) {
+          currentCompany = line;
+        } else {
+          // Could be an unbulleted description line or new title
+          if (roleKeywords.test(line)) {
+            saveCurrentJob();
+            currentTitle = line;
+          } else {
+            currentBullets.push(line);
+          }
+        }
+        continue;
+      }
+
+      // Normal text / paragraph description line
+      currentBullets.push(line);
     }
 
-    if (currentTitle) {
-      experienceList.push({
-        id: `exp-${experienceList.length + 1}`,
-        title: currentTitle,
-        company: currentCompany || "Company",
-        duration: currentDuration || "",
-        description: currentBullets.join(" "),
-      });
-    }
+    saveCurrentJob();
   }
 
   if (experienceList.length === 0) {
@@ -458,23 +551,83 @@ export function extractProjects(text: string): Project[] {
   if (!text) return [{ id: "proj-1", title: "", technologies: "", description: "" }];
 
   const projectsList: Project[] = [];
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-  if (text.includes("SahaAI")) {
-    projectsList.push({
-      id: "proj-1",
-      title: "SahaAI - AI Assistance Platform",
-      technologies: "Python, Machine Learning, HTML, CSS, Figma",
-      description: "Built SahaAI, an AI-powered assistance prototype aimed at improving information access and operational efficiency for Goa Police.",
-    });
-  }
+  const projStart = lines.findIndex((l) =>
+    /^(?:PROJECTS|ACADEMIC\s+PROJECTS|KEY\s+PROJECTS|PERSONAL\s+PROJECTS|TECHNICAL\s+PROJECTS)\b/i.test(l)
+  );
 
-  if (text.includes("Safe Safar")) {
-    projectsList.push({
-      id: "proj-2",
-      title: "Safe Safar",
-      technologies: "HTML, CSS, JavaScript, Leaflet.js, OpenStreetMap, Figma",
-      description: "Developed Safe Safar, a safety-aware navigation system designed to help users find safer travel routes with a focus on women's safety.",
-    });
+  if (projStart !== -1) {
+    let currentTitle = "";
+    let currentTech = "";
+    let currentBullets: string[] = [];
+
+    const saveCurrentProject = () => {
+      if (currentTitle) {
+        projectsList.push({
+          id: `proj-${projectsList.length + 1}`,
+          title: currentTitle,
+          technologies: currentTech,
+          description: currentBullets.join(" ").trim(),
+        });
+        currentTitle = "";
+        currentTech = "";
+        currentBullets = [];
+      }
+    };
+
+    for (let i = projStart + 1; i < lines.length; i++) {
+      const line = lines[i];
+
+      // End of section
+      if (
+        /^(?:EDUCATION|ACADEMICS|KEY\s+SKILLS|ADDITIONAL\s+SKILLS|SKILLS|TECHNICAL\s+SKILLS|PROFESSIONAL\s+EXPERIENCE|WORK\s+EXPERIENCE|EXPERIENCE|PROFILE|CONTACT|CERTIFICATIONS|ACHIEVEMENTS|AWARDS|EXTRACURRICULAR)\b/i.test(
+          line
+        )
+      ) {
+        break;
+      }
+
+      const isBullet = /^[•\-\*Ó‡R\d+.)]\s*/.test(line);
+      const cleanLine = line.replace(/^[•\-\*Ó‡R\d+.)]\s*/, "").trim();
+
+      if (isBullet) {
+        currentBullets.push(cleanLine);
+        continue;
+      }
+
+      // Check for tech stack line e.g. "Technologies: React, Node.js" or "Tech Stack: Python"
+      const techPrefixMatch = line.match(/^(?:Technologies|Tech\s+Stack|Tools|Built\s+with|Stack)\s*:\s*(.+)$/i);
+      if (techPrefixMatch) {
+        currentTech = techPrefixMatch[1].trim();
+        continue;
+      }
+
+      // Check for compound project line e.g. "Safe Safar | Leaflet.js, OpenStreetMap, JavaScript"
+      if (line.includes("|") || line.includes(" — ") || line.includes(" – ")) {
+        const parts = line.split(/[|—–]/).map((p) => p.trim());
+        if (currentTitle && currentBullets.length > 0) {
+          saveCurrentProject();
+        }
+        currentTitle = parts[0];
+        currentTech = parts.slice(1).join(", ");
+        continue;
+      }
+
+      // Short heading line -> new project title
+      if (line.length < 60 && !line.endsWith(".") && !line.includes("@")) {
+        if (currentTitle && currentBullets.length > 0) {
+          saveCurrentProject();
+        }
+        currentTitle = line;
+        continue;
+      }
+
+      // Unbulleted descriptive paragraph
+      currentBullets.push(line);
+    }
+
+    saveCurrentProject();
   }
 
   if (projectsList.length === 0) {
@@ -495,12 +648,35 @@ export function extractProjects(text: string): Project[] {
 export function extractAchievements(text: string): Achievement[] {
   if (!text) return [];
   const achievements: Achievement[] = [];
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-  if (text.includes("Goa Police Hackathon")) {
-    achievements.push({
-      id: "ach-1",
-      description: "Participated in the Goa Police Hackathon at BITS Goa, developed SahaAI, and finished among the Top 4 teams.",
-    });
+  const achStart = lines.findIndex((l) =>
+    /^(?:ACHIEVEMENTS|AWARDS|HONORS|HONORS\s+(?:&|AND)\s+AWARDS|AWARDS\s+(?:&|AND)\s+ACHIEVEMENTS|KEY\s+ACHIEVEMENTS|ACCOMPLISHMENTS|EXTRACURRICULAR(?:\s+ACTIVITIES)?)\b/i.test(
+      l
+    )
+  );
+
+  if (achStart !== -1) {
+    for (let i = achStart + 1; i < lines.length; i++) {
+      const line = lines[i];
+
+      // End of section check
+      if (
+        /^(?:EDUCATION|ACADEMICS|KEY\s+SKILLS|ADDITIONAL\s+SKILLS|SKILLS|TECHNICAL\s+SKILLS|PROFESSIONAL\s+EXPERIENCE|WORK\s+EXPERIENCE|EXPERIENCE|PROFILE|CONTACT|PROJECTS|CERTIFICATIONS)\b/i.test(
+          line
+        )
+      ) {
+        break;
+      }
+
+      const cleanLine = line.replace(/^[•\-\*Ó‡R\d+.)]\s*/, "").trim();
+      if (cleanLine.length > 10 && !cleanLine.includes("@") && !cleanLine.includes("linkedin.com")) {
+        achievements.push({
+          id: `ach-${achievements.length + 1}`,
+          description: cleanLine,
+        });
+      }
+    }
   }
 
   return achievements;
@@ -509,13 +685,52 @@ export function extractAchievements(text: string): Achievement[] {
 export function extractCertifications(text: string): Certification[] {
   if (!text) return [];
   const certifications: Certification[] = [];
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-  if (text.includes("Goa Police Hackathon") || text.includes("SahaAI")) {
-    certifications.push({
-      id: "cert-1",
-      name: "Goa Police Hackathon Certificate of Participation",
-      issuer: "BITS Goa / Goa Police",
-    });
+  const certStart = lines.findIndex((l) =>
+    /^(?:CERTIFICATIONS|CERTIFICATES|LICENSES\s+(?:&|AND)\s+CERTIFICATIONS|CERTIFICATIONS\s+(?:&|AND)\s+LICENSES|TRAINING\s+(?:&|AND)\s+CERTIFICATIONS|COURSES)\b/i.test(
+      l
+    )
+  );
+
+  if (certStart !== -1) {
+    for (let i = certStart + 1; i < lines.length; i++) {
+      const line = lines[i];
+
+      // End of section check
+      if (
+        /^(?:EDUCATION|ACADEMICS|KEY\s+SKILLS|ADDITIONAL\s+SKILLS|SKILLS|TECHNICAL\s+SKILLS|PROFESSIONAL\s+EXPERIENCE|WORK\s+EXPERIENCE|EXPERIENCE|PROFILE|CONTACT|PROJECTS|ACHIEVEMENTS|AWARDS|EXTRACURRICULAR)\b/i.test(
+          line
+        )
+      ) {
+        break;
+      }
+
+      const cleanLine = line.replace(/^[•\-\*Ó‡R\d+.)]\s*/, "").trim();
+      if (cleanLine.length < 5 || cleanLine.includes("@")) continue;
+
+      // Extract Name and Issuer using delimiters
+      let name = cleanLine;
+      let issuer = "";
+
+      if (cleanLine.includes(" - ") || cleanLine.includes(" — ") || cleanLine.includes(" | ")) {
+        const parts = cleanLine.split(/\s*[-—|]\s*/).filter(Boolean);
+        name = parts[0] || cleanLine;
+        issuer = parts.slice(1).join(" / ");
+      } else {
+        const byMatch = cleanLine.match(/^(.+?)\s+(?:by|from|issued\s+by)\s+(.+)$/i);
+        if (byMatch) {
+          name = byMatch[1].trim();
+          issuer = byMatch[2].trim();
+        }
+      }
+
+      certifications.push({
+        id: `cert-${certifications.length + 1}`,
+        name,
+        issuer,
+      });
+    }
   }
 
   return certifications;

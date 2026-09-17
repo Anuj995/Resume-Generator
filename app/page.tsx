@@ -130,9 +130,9 @@ export default function HomePage() {
                 </span>
                 <span className="text-base">🎯</span>
               </div>
-              <h3 className="font-bold text-slate-900 text-sm mb-1.5">Select Role</h3>
+              <h3 className="font-bold text-slate-900 text-sm mb-1.5">Role &amp; Job Description</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Pick your target job title to automatically match industry keywords.
+                Choose your job title and optionally attach a job description or screenshot for ATS tailoring.
               </p>
             </div>
           </div>
@@ -143,11 +143,11 @@ export default function HomePage() {
                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
                   Step 03
                 </span>
-                <span className="text-base">📑</span>
+                <span className="text-base">🔍</span>
               </div>
-              <h3 className="font-bold text-slate-900 text-sm mb-1.5">Choose Template</h3>
+              <h3 className="font-bold text-slate-900 text-sm mb-1.5">Review Extraction</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Select from 5 recruiter-tested, single-column ATS layouts.
+                Check and edit facts structured by Gemini AI before generating your ATS resume.
               </p>
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function HomePage() {
               </div>
               <h3 className="font-bold text-slate-900 text-sm mb-1.5">Edit &amp; Export</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Tune with Gemini AI, live preview, and download clean PDF or Word file.
+                Live side-by-side editing, ATS single-column layout, and 100% selectable-text PDF export.
               </p>
             </div>
           </div>
