@@ -101,7 +101,7 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
   const flatSkillsList = (skills || []).filter((s) => s && s.trim().length > 0);
 
   // Styling variant according to selected ATS template
-  const activeTemplate = templateId || "classic";
+  const activeTemplate = templateId || data?.templateId || "classic";
 
   // Template configuration for ATS compliance + distinct visual identity
   const isClassic = activeTemplate === "classic";

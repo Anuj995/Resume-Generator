@@ -14,6 +14,19 @@ export const RESUME_STORAGE_KEYS = [
 export type ResumeStorageKey = (typeof RESUME_STORAGE_KEYS)[number];
 
 /**
+ * Emits a custom browser event to notify all components (like the Navbar)
+ * that resume cache/state has been updated.
+ */
+export function notifyStorageChange(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.dispatchEvent(new Event("resume_storage_update"));
+  } catch {
+    // ignore
+  }
+}
+
+/**
  * Completely purges all cached resume data and previous state from browser storage.
  */
 export function clearAllResumeData(): void {
@@ -26,6 +39,7 @@ export function clearAllResumeData(): void {
       // ignore
     }
   });
+  notifyStorageChange();
 }
 
 /**
@@ -41,6 +55,37 @@ export function hasResumeCache(): boolean {
       return false;
     }
   });
+}
+
+/**
+ * Validates whether a specific step/route is unlocked and ready to visit based on completed inputs.
+ */
+export function isStepUnlocked(step: "home" | "input" | "explore" | "role" | "templates" | "editor" | "preview" | "organize"): boolean {
+  if (typeof window === "undefined") return false;
+  if (step === "home" || step === "input" || step === "explore") return true;
+
+  const rawText = (localStorage.getItem("resume_raw_text") || "").trim();
+  const hasValidInput = rawText.length >= 25;
+  if (!hasValidInput) return false;
+
+  if (step === "role") {
+    return true;
+  }
+
+  const role = (localStorage.getItem("resume_target_role") || "").trim();
+  const hasRole = Boolean(role);
+  if (!hasRole) return false;
+
+  if (step === "organize" || step === "templates") {
+    return true;
+  }
+
+  const hasData = Boolean(localStorage.getItem("resume_data"));
+  if (step === "editor" || step === "preview") {
+    return hasData;
+  }
+
+  return false;
 }
 
 /**

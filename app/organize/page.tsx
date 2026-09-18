@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ResumeData, Experience, Project, Education, Certification, Achievement, Hackathon, Course } from "@/types/resume";
 import { extractResumeData } from "@/lib/resumeParser";
 import StepIndicator from "@/components/StepIndicator";
-import { clearAllResumeData, computeTailoredHash } from "@/lib/storage";
+import { clearAllResumeData, computeTailoredHash, notifyStorageChange } from "@/lib/storage";
 
 export default function OrganizePage() {
   const router = useRouter();
@@ -66,6 +66,7 @@ export default function OrganizePage() {
     // Instantly save edits and navigate to editor with ZERO API calls or token usage!
     if (isTailored && !forceTailor) {
       localStorage.setItem("resume_data", JSON.stringify(resumeData));
+      notifyStorageChange();
       router.push("/editor");
       return;
     }
@@ -93,6 +94,7 @@ export default function OrganizePage() {
           localStorage.setItem("resume_data", JSON.stringify(data.resumeData));
           localStorage.setItem("resume_tailored", "true");
           setIsAlreadyTailored(true);
+          notifyStorageChange();
           router.push("/editor");
           return;
         }
@@ -107,6 +109,7 @@ export default function OrganizePage() {
     localStorage.setItem("resume_data", JSON.stringify(resumeData));
     localStorage.setItem("resume_tailored", "true");
     setIsAlreadyTailored(true);
+    notifyStorageChange();
     router.push("/editor");
   };
 

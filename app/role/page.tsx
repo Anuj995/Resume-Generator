@@ -6,7 +6,7 @@ import Link from "next/link";
 import { JOB_ROLES } from "@/data/roles";
 import StepIndicator from "@/components/StepIndicator";
 import { extractTextFromPdf } from "@/lib/pdfExtractor";
-import { computeExtractHash } from "@/lib/storage";
+import { computeExtractHash, notifyStorageChange } from "@/lib/storage";
 
 export default function RolePage() {
   const router = useRouter();
@@ -162,6 +162,7 @@ export default function RolePage() {
             parsed.jobDescription = jdText.trim();
           }
           localStorage.setItem("resume_data", JSON.stringify(parsed));
+          notifyStorageChange();
           router.push("/organize");
           return;
         }
@@ -200,12 +201,14 @@ export default function RolePage() {
       localStorage.setItem("resume_data", JSON.stringify(resumeData));
       localStorage.setItem("resume_extracted", "true");
       localStorage.setItem("resume_extract_hash", extractHash);
+      notifyStorageChange();
 
       // Navigate to Review Your Information page
       router.push("/organize");
     } catch (err: unknown) {
       console.error("Resume extraction failed:", err);
       // Even if network fails, route to organize where local parser fallback handles it
+      notifyStorageChange();
       router.push("/organize");
     } finally {
       setIsExtracting(false);
@@ -244,16 +247,25 @@ export default function RolePage() {
               placeholder="e.g. Frontend Developer, Data Analyst, Cloud Engineer..."
               value={targetRole}
               onChange={(e) => {
-                setTargetRole(e.target.value);
+                const val = e.target.value;
+                setTargetRole(val);
                 if (errorMessage) setErrorMessage("");
+                if (!val.trim()) {
+                  localStorage.removeItem("resume_target_role");
+                  notifyStorageChange();
+                }
               }}
               className="w-full border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl p-3 text-sm bg-white text-slate-900 font-medium focus:outline-none"
             />
             {targetRole && (
               <button
                 type="button"
-                onClick={() => setTargetRole("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 px-1"
+                onClick={() => {
+                  setTargetRole("");
+                  localStorage.removeItem("resume_target_role");
+                  notifyStorageChange();
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 px-1 cursor-pointer"
                 title="Clear"
               >
                 ✕

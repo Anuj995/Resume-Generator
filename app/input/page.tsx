@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractTextFromPdf } from "@/lib/pdfExtractor";
 import StepIndicator from "@/components/StepIndicator";
-import { clearAllResumeData } from "@/lib/storage";
+import { clearAllResumeData, notifyStorageChange } from "@/lib/storage";
 
 const SAMPLE_PROFILE = `Alex Morgan
 alex.morgan@email.com | +1 (555) 019-2834 | San Francisco, CA | linkedin.com/in/alexmorgan
@@ -47,7 +47,12 @@ export default function InputPage() {
   useEffect(() => {
     // If starting a fresh resume via ?new=true
     if (typeof window !== "undefined" && window.location.search.includes("new=true")) {
+      const chosenTemplate = localStorage.getItem("resume_template");
       clearAllResumeData();
+      if (chosenTemplate) {
+        localStorage.setItem("resume_template", chosenTemplate);
+        notifyStorageChange();
+      }
       setInputText("");
       setUploadedFileName("");
       setUploadedFileSize("");
@@ -107,6 +112,7 @@ export default function InputPage() {
     if (uploadedFileName) {
       localStorage.setItem("resume_file_name", uploadedFileName);
     }
+    notifyStorageChange();
     setErrorMessage("");
 
     // Navigate to role selection page
@@ -137,14 +143,20 @@ export default function InputPage() {
           const pdfText = await extractTextFromPdf(file);
           extracted = pdfText || "";
           setInputText(extracted);
-          localStorage.setItem("resume_raw_text", extracted);
+          if (extracted.trim().length >= 25) {
+            localStorage.setItem("resume_raw_text", extracted);
+            notifyStorageChange();
+          }
         } else if (file.type.includes("text") || file.name.endsWith(".txt")) {
           const reader = new FileReader();
           reader.onload = (event) => {
             const content = event.target?.result as string;
             if (content) {
               setInputText(content);
-              localStorage.setItem("resume_raw_text", content);
+              if (content.trim().length >= 25) {
+                localStorage.setItem("resume_raw_text", content);
+                notifyStorageChange();
+              }
             }
           };
           reader.readAsText(file);
@@ -153,7 +165,10 @@ export default function InputPage() {
           reader.onload = (event) => {
             const content = (event.target?.result as string) || "";
             setInputText(content.slice(0, 3000));
-            localStorage.setItem("resume_raw_text", content.slice(0, 3000));
+            if (content.trim().length >= 25) {
+              localStorage.setItem("resume_raw_text", content.slice(0, 3000));
+              notifyStorageChange();
+            }
           };
           reader.readAsText(file);
         }
@@ -185,6 +200,7 @@ export default function InputPage() {
     if (uploadedFileName) {
       localStorage.setItem("resume_file_name", uploadedFileName);
     }
+    notifyStorageChange();
     router.push("/role");
   };
 
@@ -204,6 +220,7 @@ export default function InputPage() {
     setUploadedFileSize("");
     setErrorMessage("");
     setHasExistingDraft(false);
+    notifyStorageChange();
   };
 
   return (
@@ -370,9 +387,10 @@ export default function InputPage() {
             const val = e.target.value;
             setInputText(val);
             if (errorMessage) setErrorMessage("");
-            if (!val.trim()) {
+            if (val.trim().length < 25) {
               localStorage.removeItem("resume_raw_text");
               localStorage.removeItem("resume_data");
+              notifyStorageChange();
             }
           }}
           placeholder="Example:

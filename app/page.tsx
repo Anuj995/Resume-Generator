@@ -38,7 +38,7 @@ export default function HomePage() {
           </svg>
         </Link>
         <Link
-          href="/templates"
+          href="/explore"
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold px-5 py-3 rounded-xl shadow-2xs transition-all text-sm sm:text-base cursor-pointer"
         >
           <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -47,9 +47,8 @@ export default function PreviewPage() {
       return;
     }
 
-    const parsed = extractResumeData(rawResumeText, savedRole);
-    parsed.templateId = savedTemplate;
-    setResumeData(parsed);
+    // If structured resume data is missing, redirect to review & organize step
+    router.replace("/organize");
   }, [router]);
 
   const handleTemplateChange = (newTemplateId: string) => {

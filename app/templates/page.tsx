@@ -87,6 +87,18 @@ export default function TemplatesPage() {
   const [previewMode, setPreviewMode] = useState<"card" | "full">("card");
 
   useEffect(() => {
+    const rawResumeText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (!rawResumeText || rawResumeText.length < 25) {
+      router.replace("/explore");
+      return;
+    }
+
+    const savedRole = (localStorage.getItem("resume_target_role") || "").trim();
+    if (!savedRole) {
+      router.replace("/role");
+      return;
+    }
+
     // Check localStorage for previously selected template
     const savedTemplate = localStorage.getItem("resume_template");
     if (savedTemplate && RESUME_TEMPLATES.some((t) => t.id === savedTemplate)) {

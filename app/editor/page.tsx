@@ -187,11 +187,8 @@ export default function EditorPage() {
       return;
     }
 
-    const savedFileName = localStorage.getItem("resume_file_name") || "";
-    const generated = extractResumeData(rawResumeText, savedRole, savedFileName);
-    generated.templateId = savedTemplate;
-    setResumeData(generated);
-    setSkillsInput(generated.skills.join(", "));
+    // Missing structured resume data - redirect to review & organize step
+    router.replace("/organize");
   }, [router]);
 
   const handleTemplateChange = (id: string) => {
@@ -994,7 +991,7 @@ export default function EditorPage() {
                 </span>
               </div>
               <Link
-                href="/templates"
+                href="/explore"
                 className="text-[11px] text-blue-600 hover:text-blue-800 font-medium hover:underline"
               >
                 Browse All Templates →
