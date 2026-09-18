@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ResumeData, Education, Experience, Project, Certification, Achievement } from "@/types/resume";
 import { extractResumeData } from "@/lib/resumeParser";
@@ -8,6 +9,7 @@ import { RESUME_TEMPLATES, DEFAULT_TEMPLATE_ID } from "@/data/templateData";
 import ResumePreview from "@/components/ResumePreview";
 import { enhanceAll, EnhanceField } from "@/lib/useAIEnhance";
 import StepIndicator from "@/components/StepIndicator";
+import { clearAllResumeData } from "@/lib/storage";
 
 // ─── Inline Enhance Panel ────────────────────────────────────────────────────
 
@@ -47,7 +49,7 @@ function EnhancePanel({ original, enhanced, loading, error, onAccept, onDiscard 
             <div className="h-3 bg-violet-100 rounded animate-pulse w-full" />
             <div className="h-3 bg-violet-100 rounded animate-pulse w-4/5" />
             <div className="h-3 bg-violet-100 rounded animate-pulse w-3/5" />
-            <p className="text-[11px] text-violet-500 italic">Enhancing with Gemini AI…</p>
+            <p className="text-[11px] text-violet-500 italic">Enhancing with AI…</p>
           </div>
         )}
 
@@ -138,6 +140,7 @@ const emptyField: FieldEnhance = { loading: false, enhanced: null, error: null }
 // ─── Main Editor Page ─────────────────────────────────────────────────────────
 
 export default function EditorPage() {
+  const router = useRouter();
 
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [skillsInput, setSkillsInput] = useState("");
@@ -152,8 +155,14 @@ export default function EditorPage() {
   const [enhancingAll, setEnhancingAll] = useState(false);
   const [enhanceAllStatus, setEnhanceAllStatus] = useState<string | null>(null);
 
-  // Load resume data on mount
+  // Load resume data on mount with prerequisite checks
   useEffect(() => {
+    const rawResumeText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (!rawResumeText || rawResumeText.length < 25) {
+      router.replace("/input?error=missing_info");
+      return;
+    }
+
     const savedTemplate = localStorage.getItem("resume_template") || DEFAULT_TEMPLATE_ID;
     setTemplateId(savedTemplate);
 
@@ -172,14 +181,18 @@ export default function EditorPage() {
       }
     }
 
-    const savedText = localStorage.getItem("resume_raw_text") || "";
-    const savedRole = localStorage.getItem("resume_target_role") || "";
+    const savedRole = (localStorage.getItem("resume_target_role") || "").trim();
+    if (!savedRole) {
+      router.replace("/role");
+      return;
+    }
+
     const savedFileName = localStorage.getItem("resume_file_name") || "";
-    const generated = extractResumeData(savedText, savedRole, savedFileName);
+    const generated = extractResumeData(rawResumeText, savedRole, savedFileName);
     generated.templateId = savedTemplate;
     setResumeData(generated);
     setSkillsInput(generated.skills.join(", "));
-  }, []);
+  }, [router]);
 
   const handleTemplateChange = (id: string) => {
     setTemplateId(id);
@@ -361,7 +374,7 @@ export default function EditorPage() {
   const handleEnhanceAll = async () => {
     if (!resumeData) return;
     setEnhancingAll(true);
-    setEnhanceAllStatus("Enhancing all fields with Gemini AI…");
+    setEnhanceAllStatus("Enhancing all fields with AI…");
 
     const fields: { field: EnhanceField; content: string }[] = [
       { field: "summary", content: resumeData.summary },
@@ -450,6 +463,20 @@ export default function EditorPage() {
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             )}
             {enhancingAll ? "✨ Enhancing All…" : "✨ Enhance All with AI"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("Start a new resume? This will clear all current resume progress.")) {
+                clearAllResumeData();
+                router.push("/input?new=true");
+              }
+            }}
+            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-rose-600 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 transition-all cursor-pointer"
+            title="Clear all cached resume data and start fresh"
+          >
+            New Resume
           </button>
 
           <Link

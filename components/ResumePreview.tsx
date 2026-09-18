@@ -100,56 +100,179 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
 
   const flatSkillsList = (skills || []).filter((s) => s && s.trim().length > 0);
 
-  // Styling variant - pure ATS, clean Docs typography
-  const isSerif = templateId === "classic" || templateId === "executive";
-  const fontFamilyClass = isSerif ? "font-serif" : "font-sans";
+  // Styling variant according to selected ATS template
+  const activeTemplate = templateId || "classic";
+
+  // Template configuration for ATS compliance + distinct visual identity
+  const isClassic = activeTemplate === "classic";
+  const isModern = activeTemplate === "modern";
+  const isExecutive = activeTemplate === "professional";
+  const isCompact = activeTemplate === "compact";
+  const isMinimal = activeTemplate === "clean";
+
+  // Document container styles
+  let containerClasses = "bg-white text-black max-w-[800px] mx-auto text-left print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none ";
+  if (isClassic) {
+    containerClasses += "font-serif p-8 sm:p-10 leading-relaxed border border-gray-200 rounded-lg shadow-sm";
+  } else if (isModern) {
+    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border border-blue-100 rounded-lg shadow-sm";
+  } else if (isExecutive) {
+    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border-t-4 border-t-teal-700 border-x border-b border-gray-200 rounded-lg shadow-sm";
+  } else if (isCompact) {
+    containerClasses += "font-sans p-6 sm:p-7 leading-snug border border-indigo-100 rounded-lg shadow-sm";
+  } else if (isMinimal) {
+    containerClasses += "font-sans p-10 sm:p-12 leading-relaxed border border-gray-100 rounded-lg shadow-xs";
+  } else {
+    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border border-gray-200 rounded-lg shadow-sm";
+  }
+
+  // Section heading style helper
+  const sectionHeadingClass = isClassic
+    ? "text-xs font-bold uppercase tracking-wider text-black border-b border-gray-700 pb-0.5 mb-2 font-serif"
+    : isModern
+    ? "text-xs font-bold uppercase tracking-wider text-blue-700 border-b-2 border-blue-600 pb-0.5 mb-2 font-sans"
+    : isExecutive
+    ? "text-xs font-bold uppercase tracking-wider text-teal-900 border-b-2 border-teal-700 pb-0.5 mb-2 font-sans"
+    : isCompact
+    ? "text-[11px] font-bold uppercase tracking-normal text-indigo-950 border-b border-indigo-300 pb-0.5 mb-1.5 font-sans"
+    : "text-[11px] font-semibold uppercase tracking-widest text-gray-700 border-b border-gray-200 pb-1 mb-2.5 font-sans";
+
+  const sectionMarginClass = isCompact ? "mb-2.5" : isMinimal ? "mb-5" : "mb-4";
 
   return (
     <div
       id="resume-preview-document"
-      className={`bg-white text-black p-8 sm:p-10 border border-gray-200 rounded-lg shadow-sm max-w-[800px] mx-auto text-left leading-relaxed ${fontFamilyClass} print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none`}
+      className={containerClasses}
       style={{
         minHeight: "1056px",
-        color: "#111827",
+        color: isMinimal ? "#1f2937" : "#111827",
         backgroundColor: "#ffffff",
       }}
     >
       {/* =========================================================================
-          1. HEADER (Centered, Single Column, No Icons, No Graphics)
+          1. HEADER (Single Column, No Icons, ATS Compliant)
           ========================================================================= */}
-      <header className="border-b border-gray-300 pb-3 mb-4 text-center">
-        <h1 className="text-2xl font-bold tracking-tight uppercase text-black">
-          {personalInfo?.fullName || "Your Full Name"}
-        </h1>
+      {isClassic && (
+        <header className="border-b border-gray-800 pb-3 mb-4 text-center">
+          <h1 className="text-2xl font-bold tracking-tight uppercase text-black font-serif">
+            {personalInfo?.fullName || "Your Full Name"}
+          </h1>
+          {targetRole && (
+            <p className="text-sm font-semibold text-gray-800 mt-1 font-serif">
+              {targetRole}
+            </p>
+          )}
+          {contactLine1 && (
+            <p className="text-xs text-gray-700 mt-1.5 font-normal tracking-wide">
+              {contactLine1}
+            </p>
+          )}
+          {contactLine2 && (
+            <p className="text-xs text-gray-700 mt-0.5 font-normal tracking-wide">
+              {contactLine2}
+            </p>
+          )}
+        </header>
+      )}
 
-        {targetRole && (
-          <p className="text-sm font-semibold text-gray-800 mt-1">
-            {targetRole}
-          </p>
-        )}
+      {isModern && (
+        <header className="border-b-2 border-blue-600 pb-3 mb-4 text-left">
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight uppercase text-slate-950 font-sans">
+              {personalInfo?.fullName || "Your Full Name"}
+            </h1>
+            {targetRole && (
+              <span className="text-sm font-bold text-blue-600 uppercase tracking-wide">
+                {targetRole}
+              </span>
+            )}
+          </div>
+          {contactLine1 && (
+            <p className="text-xs text-slate-700 mt-2 font-medium tracking-wide">
+              {contactLine1}
+            </p>
+          )}
+          {contactLine2 && (
+            <p className="text-xs text-slate-600 mt-0.5 font-normal tracking-wide">
+              {contactLine2}
+            </p>
+          )}
+        </header>
+      )}
 
-        {contactLine1 && (
-          <p className="text-xs text-gray-700 mt-1.5 font-normal tracking-wide">
-            {contactLine1}
-          </p>
-        )}
+      {isExecutive && (
+        <header className="border-b-2 border-teal-800 pb-3 mb-4 text-left">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight uppercase text-teal-950 font-sans">
+                {personalInfo?.fullName || "Your Full Name"}
+              </h1>
+              {targetRole && (
+                <p className="text-xs font-bold uppercase tracking-widest text-teal-700 mt-1">
+                  {targetRole}
+                </p>
+              )}
+            </div>
+          </div>
+          {contactLine1 && (
+            <p className="text-xs text-gray-700 mt-2 font-normal tracking-wide">
+              {contactLine1}
+            </p>
+          )}
+          {contactLine2 && (
+            <p className="text-xs text-gray-600 mt-0.5 font-normal tracking-wide">
+              {contactLine2}
+            </p>
+          )}
+        </header>
+      )}
 
-        {contactLine2 && (
-          <p className="text-xs text-gray-700 mt-0.5 font-normal tracking-wide">
-            {contactLine2}
-          </p>
-        )}
-      </header>
+      {isCompact && (
+        <header className="border-b border-indigo-200 pb-2 mb-3 text-left">
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+            <h1 className="text-xl font-bold tracking-tight uppercase text-slate-950 font-sans">
+              {personalInfo?.fullName || "Your Full Name"}
+            </h1>
+            {targetRole && (
+              <span className="text-xs font-bold text-indigo-700">
+                {targetRole}
+              </span>
+            )}
+          </div>
+          <div className="text-[11px] text-slate-600 mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+            {contactLine1 && <span>{contactLine1}</span>}
+            {contactLine1 && contactLine2 && <span>|</span>}
+            {contactLine2 && <span>{contactLine2}</span>}
+          </div>
+        </header>
+      )}
+
+      {isMinimal && (
+        <header className="border-b border-gray-200 pb-4 mb-5 text-left">
+          <h1 className="text-2xl sm:text-3xl font-light tracking-wide text-gray-900 font-sans">
+            {personalInfo?.fullName || "Your Full Name"}
+          </h1>
+          {targetRole && (
+            <p className="text-xs font-normal tracking-widest uppercase text-gray-500 mt-1">
+              {targetRole}
+            </p>
+          )}
+          <div className="text-xs text-gray-500 mt-2.5 font-light tracking-wide space-y-0.5">
+            {contactLine1 && <p>{contactLine1}</p>}
+            {contactLine2 && <p>{contactLine2}</p>}
+          </div>
+        </header>
+      )}
 
       {/* =========================================================================
           2. PROFESSIONAL SUMMARY (2-3 lines, role-targeted)
           ========================================================================= */}
       {summary && summary.trim().length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Professional Summary
           </h2>
-          <p className="text-xs text-gray-800 leading-relaxed text-justify">
+          <p className={`${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 leading-relaxed text-justify`}>
             {summary.trim()}
           </p>
         </section>
@@ -159,13 +282,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
           3. EDUCATION (Standard ATS format)
           ========================================================================= */}
       {filteredEducation && filteredEducation.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-2">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Education
           </h2>
-          <div className="space-y-2">
+          <div className={isCompact ? "space-y-1.5" : "space-y-2"}>
             {filteredEducation.map((edu, i) => (
-              <div key={edu.id || i} className="text-xs">
+              <div key={edu.id || i} className={isCompact ? "text-[11px]" : "text-xs"}>
                 <div className="flex justify-between items-baseline font-bold text-black">
                   <span>{edu.degree}</span>
                   {edu.year && (
@@ -188,11 +311,11 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
           4. TECHNICAL SKILLS (Text-based categories, NO bars or ratings)
           ========================================================================= */}
       {((hasCategorized) || flatSkillsList.length > 0) && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Technical Skills
           </h2>
-          <div className="text-xs text-gray-800 space-y-1">
+          <div className={`${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 space-y-1`}>
             {hasCategorized ? (
               <>
                 {categorizedSkills?.languages && categorizedSkills.languages.length > 0 && (
@@ -234,13 +357,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
           5. WORK EXPERIENCE (Reverse chronological, bullet points)
           ========================================================================= */}
       {filteredExperience && filteredExperience.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-2">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Work Experience
           </h2>
-          <div className="space-y-3">
+          <div className={isCompact ? "space-y-2" : "space-y-3"}>
             {filteredExperience.map((exp, i) => (
-              <div key={exp.id || i} className="text-xs">
+              <div key={exp.id || i} className={isCompact ? "text-[11px]" : "text-xs"}>
                 <div className="flex justify-between items-baseline">
                   <span className="font-bold text-black">{exp.title}</span>
                   {exp.duration && (
@@ -267,13 +390,13 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
           6. PROJECTS (Name, Technologies, Bullet points)
           ========================================================================= */}
       {filteredProjects && filteredProjects.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-2">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Projects
           </h2>
-          <div className="space-y-3">
+          <div className={isCompact ? "space-y-2" : "space-y-3"}>
             {filteredProjects.map((proj, i) => (
-              <div key={proj.id || i} className="text-xs">
+              <div key={proj.id || i} className={isCompact ? "text-[11px]" : "text-xs"}>
                 <div className="font-bold text-black">
                   {proj.title}
                 </div>
@@ -299,11 +422,11 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
           7. CERTIFICATIONS (Format: Name — Issuer | Year)
           ========================================================================= */}
       {filteredCertifications && filteredCertifications.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Certifications
           </h2>
-          <ul className="text-xs text-gray-800 space-y-1">
+          <ul className={`${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 space-y-1`}>
             {filteredCertifications.map((cert, i) => (
               <li key={cert.id || i} className="list-none">
                 <span className="font-medium text-black">{cert.name}</span>
@@ -319,11 +442,11 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
           8. ACHIEVEMENTS (Normal bullet points)
           ========================================================================= */}
       {filteredAchievements && filteredAchievements.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Achievements
           </h2>
-          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+          <ul className={`list-disc list-outside ml-4 ${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 space-y-1 leading-relaxed`}>
             {filteredAchievements.map((ach, i) => (
               <li key={ach.id || i}>{ach.description}</li>
             ))}
@@ -335,11 +458,11 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
           9. OPTIONAL SECTIONS (Only rendered if user has entries)
           ========================================================================= */}
       {filteredHackathons.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Hackathons &amp; Competitions
           </h2>
-          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+          <ul className={`list-disc list-outside ml-4 ${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 space-y-1 leading-relaxed`}>
             {filteredHackathons.map((h, i) => (
               <li key={h.id || i}>
                 <span className="font-bold text-black">{h.title}</span>
@@ -351,11 +474,11 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {filteredCourses.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Courses &amp; Training
           </h2>
-          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+          <ul className={`list-disc list-outside ml-4 ${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 space-y-1 leading-relaxed`}>
             {filteredCourses.map((c, i) => (
               <li key={c.id || i}>
                 <span className="font-medium text-black">{c.name}</span>
@@ -367,11 +490,11 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {filteredVolunteer.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Volunteer Experience
           </h2>
-          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+          <ul className={`list-disc list-outside ml-4 ${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 space-y-1 leading-relaxed`}>
             {filteredVolunteer.map((v, i) => (
               <li key={i}>{v}</li>
             ))}
@@ -380,11 +503,11 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
       )}
 
       {filteredPublications.length > 0 && (
-        <section className="mb-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-black border-b border-gray-300 pb-0.5 mb-1.5">
+        <section className={sectionMarginClass}>
+          <h2 className={sectionHeadingClass}>
             Publications
           </h2>
-          <ul className="list-disc list-outside ml-4 text-xs text-gray-800 space-y-1 leading-relaxed">
+          <ul className={`list-disc list-outside ml-4 ${isCompact ? "text-[11px]" : "text-xs"} text-gray-800 space-y-1 leading-relaxed`}>
             {filteredPublications.map((p, i) => (
               <li key={i}>{p}</li>
             ))}

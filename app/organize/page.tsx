@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ResumeData, Experience, Project, Education, Certification, Achievement, Hackathon, Course } from "@/types/resume";
 import { extractResumeData } from "@/lib/resumeParser";
 import StepIndicator from "@/components/StepIndicator";
+import { clearAllResumeData, computeTailoredHash } from "@/lib/storage";
 
 export default function OrganizePage() {
   const router = useRouter();
@@ -14,13 +15,28 @@ export default function OrganizePage() {
   const [targetRole, setTargetRole] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAlreadyTailored, setIsAlreadyTailored] = useState(false);
 
-  // Load extracted data from localStorage
+  // Enforce prerequisites: user must have entered info in Step 1 and selected role in Step 2
   useEffect(() => {
-    const savedRole = localStorage.getItem("resume_target_role") || "";
+    const rawResumeText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (!rawResumeText || rawResumeText.length < 25) {
+      router.replace("/input?error=missing_info");
+      return;
+    }
+
+    const savedRole = (localStorage.getItem("resume_target_role") || "").trim();
+    if (!savedRole) {
+      router.replace("/role");
+      return;
+    }
+
     const savedJd = localStorage.getItem("resume_job_description") || "";
     setTargetRole(savedRole);
     setJobDescription(savedJd);
+
+    const tailoredFlag = localStorage.getItem("resume_tailored") === "true";
+    setIsAlreadyTailored(tailoredFlag);
 
     const savedData = localStorage.getItem("resume_data");
     if (savedData) {
@@ -33,17 +49,29 @@ export default function OrganizePage() {
       }
     }
 
-    // Fallback if not already extracted in /role
-    const savedText = localStorage.getItem("resume_raw_text") || "";
+    // Fallback only if raw text is actually provided
     const savedFileName = localStorage.getItem("resume_file_name") || "";
-    const fallback = extractResumeData(savedText, savedRole, savedFileName);
+    const fallback = extractResumeData(rawResumeText, savedRole, savedFileName);
     fallback.targetRole = savedRole;
     setResumeData(fallback);
-  }, []);
+  }, [router]);
 
   // Save changes and navigate to Resume Editor
-  const handleContinueToResume = async () => {
+  const handleContinueToResume = async (forceTailor = false) => {
     if (!resumeData) return;
+
+    const isTailored = localStorage.getItem("resume_tailored") === "true";
+
+    // If AI tailoring has already been performed and user didn't explicitly request re-tailoring:
+    // Instantly save edits and navigate to editor with ZERO API calls or token usage!
+    if (isTailored && !forceTailor) {
+      localStorage.setItem("resume_data", JSON.stringify(resumeData));
+      router.push("/editor");
+      return;
+    }
+
+    const roleForTailoring = targetRole || resumeData.targetRole || "";
+    const jdForTailoring = jobDescription || resumeData.jobDescription || "";
 
     setIsGenerating(true);
 
@@ -54,8 +82,8 @@ export default function OrganizePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resumeData,
-          targetRole: targetRole || resumeData.targetRole,
-          jobDescription: jobDescription || resumeData.jobDescription,
+          targetRole: roleForTailoring,
+          jobDescription: jdForTailoring,
         }),
       });
 
@@ -63,6 +91,8 @@ export default function OrganizePage() {
         const data = await res.json();
         if (data.resumeData) {
           localStorage.setItem("resume_data", JSON.stringify(data.resumeData));
+          localStorage.setItem("resume_tailored", "true");
+          setIsAlreadyTailored(true);
           router.push("/editor");
           return;
         }
@@ -75,6 +105,8 @@ export default function OrganizePage() {
 
     // Fallback: save current edits and push
     localStorage.setItem("resume_data", JSON.stringify(resumeData));
+    localStorage.setItem("resume_tailored", "true");
+    setIsAlreadyTailored(true);
     router.push("/editor");
   };
 
@@ -298,27 +330,54 @@ export default function OrganizePage() {
             Review Your Information
           </h1>
           <p className="text-slate-600 text-sm mt-1">
-            Review and correct the facts extracted by Gemini AI before generating your ATS resume. You remain in complete control.
+            Review and correct the facts extracted by AI before generating your ATS resume. You remain in complete control.
           </p>
         </div>
 
-        <button
-          onClick={handleContinueToResume}
-          disabled={isGenerating}
-          className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm cursor-pointer whitespace-nowrap"
-        >
-          {isGenerating ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Tailoring with Gemini...</span>
-            </>
-          ) : (
-            <>
-              <span>Continue to Resume</span>
-              <span>&rarr;</span>
-            </>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("Start a new resume? This will clear all current extracted data.")) {
+                clearAllResumeData();
+                router.push("/input?new=true");
+              }
+            }}
+            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-rose-600 px-3.5 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 transition-all cursor-pointer whitespace-nowrap"
+            title="Clear all cached data and start fresh"
+          >
+            New Resume
+          </button>
+
+          {isAlreadyTailored && !isGenerating && (
+            <button
+              type="button"
+              onClick={() => handleContinueToResume(true)}
+              className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer px-2"
+              title="Re-run AI tailoring if you made major changes"
+            >
+              ✨ Re-tailor with AI
+            </button>
           )}
-        </button>
+
+          <button
+            onClick={() => handleContinueToResume(false)}
+            disabled={isGenerating}
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm cursor-pointer whitespace-nowrap"
+          >
+            {isGenerating ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Tailoring with AI...</span>
+              </>
+            ) : (
+              <>
+                <span>{isAlreadyTailored ? "Continue to Editor" : "Continue to Resume"}</span>
+                <span>&rarr;</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -861,23 +920,36 @@ export default function OrganizePage() {
             &larr; Back to Target Role
           </Link>
 
-          <button
-            onClick={handleContinueToResume}
-            disabled={isGenerating}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-sm cursor-pointer"
-          >
-            {isGenerating ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Tailoring with Gemini...</span>
-              </>
-            ) : (
-              <>
-                <span>Continue to Resume</span>
-                <span>&rarr;</span>
-              </>
+          <div className="flex items-center gap-3">
+            {isAlreadyTailored && !isGenerating && (
+              <button
+                type="button"
+                onClick={() => handleContinueToResume(true)}
+                className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+                title="Re-run AI tailoring if you made major changes"
+              >
+                ✨ Re-tailor with AI
+              </button>
             )}
-          </button>
+
+            <button
+              onClick={() => handleContinueToResume(false)}
+              disabled={isGenerating}
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-sm cursor-pointer"
+            >
+              {isGenerating ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Tailoring with AI...</span>
+                </>
+              ) : (
+                <>
+                  <span>{isAlreadyTailored ? "Continue to Editor" : "Continue to Resume"}</span>
+                  <span>&rarr;</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

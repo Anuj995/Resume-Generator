@@ -1,21 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ResumeData } from "@/types/resume";
 import { extractResumeData } from "@/lib/resumeParser";
 import { RESUME_TEMPLATES, DEFAULT_TEMPLATE_ID } from "@/data/templateData";
 import ResumePreview from "@/components/ResumePreview";
 import { downloadAsWord } from "@/lib/wordExport";
-
 import StepIndicator from "@/components/StepIndicator";
+import { clearAllResumeData } from "@/lib/storage";
 
 export default function PreviewPage() {
+  const router = useRouter();
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [templateId, setTemplateId] = useState<string>(DEFAULT_TEMPLATE_ID);
   const [wordLoading, setWordLoading] = useState(false);
 
   useEffect(() => {
+    const rawResumeText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (!rawResumeText || rawResumeText.length < 25) {
+      router.replace("/input?error=missing_info");
+      return;
+    }
+
     const savedTemplate = localStorage.getItem("resume_template") || DEFAULT_TEMPLATE_ID;
     setTemplateId(savedTemplate);
 
@@ -33,12 +41,16 @@ export default function PreviewPage() {
       }
     }
 
-    const savedText = localStorage.getItem("resume_raw_text") || "";
-    const savedRole = localStorage.getItem("resume_target_role") || "";
-    const parsed = extractResumeData(savedText, savedRole);
+    const savedRole = (localStorage.getItem("resume_target_role") || "").trim();
+    if (!savedRole) {
+      router.replace("/role");
+      return;
+    }
+
+    const parsed = extractResumeData(rawResumeText, savedRole);
     parsed.templateId = savedTemplate;
     setResumeData(parsed);
-  }, []);
+  }, [router]);
 
   const handleTemplateChange = (newTemplateId: string) => {
     setTemplateId(newTemplateId);
@@ -114,6 +126,20 @@ export default function PreviewPage() {
               ))}
             </select>
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("Start a new resume? This will clear all current resume progress.")) {
+                clearAllResumeData();
+                router.push("/input?new=true");
+              }
+            }}
+            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-rose-600 px-3.5 py-2 rounded-xl border border-slate-300 hover:border-rose-200 hover:bg-rose-50/50 transition-all cursor-pointer"
+            title="Clear all cached resume data and start fresh"
+          >
+            New Resume
+          </button>
 
           <Link
             href="/editor"

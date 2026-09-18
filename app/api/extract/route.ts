@@ -7,7 +7,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 const EXTRACTION_SYSTEM_PROMPT = `You are a resume information extraction system.
 Extract information ONLY from the provided user content.
-Organize the information into the provided JSON structure.
+If the user content does not provide information for a field, return an empty string or empty array for that field.
+You MUST NEVER invent, generate, or hallucinate fictional names, emails, job titles, companies, degrees, skills, or projects.
 Do not invent facts.
 Do not infer qualifications that are not explicitly supported.
 Do not create companies, degrees, skills, projects, certifications, achievements, dates or numbers.
@@ -19,14 +20,18 @@ export async function POST(req: NextRequest) {
   try {
     const { rawText, targetRole, fileName } = await req.json();
 
-    if (!rawText || typeof rawText !== "string" || !rawText.trim()) {
-      return NextResponse.json({ error: "No resume text provided" }, { status: 400 });
+    const trimmed = (rawText || "").trim();
+    if (!trimmed || trimmed.length < 25) {
+      return NextResponse.json(
+        { error: "Resume text is empty or too short. Please provide actual resume details (minimum 25 characters)." },
+        { status: 400 }
+      );
     }
 
     // Fallback if API key is not configured
     if (!process.env.GEMINI_API_KEY) {
       console.warn("GEMINI_API_KEY not configured, using local heuristic extraction");
-      const localData = fallbackExtract(rawText, targetRole || "", fileName);
+      const localData = fallbackExtract(trimmed, targetRole || "", fileName);
       return NextResponse.json({ resumeData: localData, source: "local" });
     }
 

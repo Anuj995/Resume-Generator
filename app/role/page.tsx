@@ -6,6 +6,7 @@ import Link from "next/link";
 import { JOB_ROLES } from "@/data/roles";
 import StepIndicator from "@/components/StepIndicator";
 import { extractTextFromPdf } from "@/lib/pdfExtractor";
+import { computeExtractHash } from "@/lib/storage";
 
 export default function RolePage() {
   const router = useRouter();
@@ -22,8 +23,14 @@ export default function RolePage() {
   // State for validation error message
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Load existing selection from localStorage on mount
+  // Enforce prerequisite: user must have entered info in Step 1
   useEffect(() => {
+    const rawResumeText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (!rawResumeText || rawResumeText.length < 25) {
+      router.replace("/input?error=missing_info");
+      return;
+    }
+
     const savedRole = localStorage.getItem("resume_target_role");
     if (savedRole) {
       setTargetRole(savedRole);
@@ -32,7 +39,7 @@ export default function RolePage() {
     if (savedJd) {
       setJdText(savedJd);
     }
-  }, []);
+  }, [router]);
 
   const activeRoleData = JOB_ROLES.find(
     (r) => r.name.toLowerCase() === targetRole.trim().toLowerCase()
@@ -119,9 +126,9 @@ export default function RolePage() {
       return;
     }
 
-    const rawResumeText = localStorage.getItem("resume_raw_text") || "";
-    if (!rawResumeText.trim()) {
-      setErrorMessage("No resume information found. Please go back and upload or enter your resume.");
+    const rawResumeText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (!rawResumeText || rawResumeText.length < 25) {
+      setErrorMessage("No valid resume information found. Please return to Step 1 to enter your details.");
       return;
     }
 
@@ -133,11 +140,40 @@ export default function RolePage() {
       localStorage.removeItem("resume_job_description");
     }
 
+    // Check if AI structuring has already been done for this session/input
+    const fileName = localStorage.getItem("resume_file_name") || "";
+    const extractHash = computeExtractHash(rawResumeText, roleToUse, fileName);
+    const existingHash = localStorage.getItem("resume_extract_hash");
+    const isAlreadyExtracted = localStorage.getItem("resume_extracted") === "true";
+    const savedData = localStorage.getItem("resume_data");
+
+    if ((isAlreadyExtracted || existingHash === extractHash) && savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        if (parsed && (parsed.personalInfo?.fullName || parsed.skills?.length > 0)) {
+          const prevRole = localStorage.getItem("resume_target_role");
+          const prevJd = localStorage.getItem("resume_job_description") || "";
+          if (prevRole !== roleToUse || prevJd !== jdText.trim()) {
+            // Role or JD changed, re-tailoring will be needed on review page
+            localStorage.removeItem("resume_tailored");
+          }
+          parsed.targetRole = roleToUse;
+          if (jdText.trim()) {
+            parsed.jobDescription = jdText.trim();
+          }
+          localStorage.setItem("resume_data", JSON.stringify(parsed));
+          router.push("/organize");
+          return;
+        }
+      } catch {
+        // proceed to API call if parse fails
+      }
+    }
+
     setIsExtracting(true);
     setErrorMessage("");
 
     try {
-      const fileName = localStorage.getItem("resume_file_name") || "";
       const res = await fetch("/api/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -162,6 +198,8 @@ export default function RolePage() {
       }
 
       localStorage.setItem("resume_data", JSON.stringify(resumeData));
+      localStorage.setItem("resume_extracted", "true");
+      localStorage.setItem("resume_extract_hash", extractHash);
 
       // Navigate to Review Your Information page
       router.push("/organize");
@@ -184,7 +222,7 @@ export default function RolePage() {
           Target Role &amp; Job Description
         </h1>
         <p className="text-slate-600 text-sm sm:text-base mt-1.5 leading-relaxed">
-          Specify the role you are applying for. Optionally add a job description (text or screenshot) for Gemini AI to tailor your resume.
+          Specify the role you are applying for. Optionally add a job description (text or screenshot) for AI to tailor your resume.
         </p>
       </div>
 
@@ -286,7 +324,7 @@ export default function RolePage() {
             </div>
           </div>
           <p className="text-xs text-slate-500 mb-3">
-            Paste the job posting text, or upload a PDF, Word document, or screenshot (PNG/JPG). Gemini will align your existing skills and experience with its exact ATS keywords.
+            Paste the job posting text, or upload a PDF, Word document, or screenshot (PNG/JPG). AI will align your existing skills and experience with its exact ATS keywords.
           </p>
 
           {/* Upload Job Description File / Screenshot */}
@@ -305,7 +343,7 @@ export default function RolePage() {
             </label>
             {isParsingJd && (
               <p className="text-[11px] text-blue-600 animate-pulse mt-1.5">
-                Parsing job description with Gemini AI...
+                Parsing job description with AI...
               </p>
             )}
           </div>
@@ -361,7 +399,7 @@ export default function RolePage() {
             {isExtracting ? (
               <>
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Structuring with Gemini...</span>
+                <span>Structuring with AI...</span>
               </>
             ) : (
               <>

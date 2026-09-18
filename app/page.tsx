@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { clearAllResumeData } from "@/lib/storage";
 
 export default function HomePage() {
   return (
@@ -19,13 +22,14 @@ export default function HomePage() {
 
       {/* Subheading */}
       <p className="text-base sm:text-lg text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-        Upload your existing resume or paste your career notes. Select your target role to generate a formatted, recruiter-ready resume with Gemini AI bullet optimization.
+        Upload your existing resume or paste your career notes. Select your target role to generate a formatted, recruiter-ready resume with AI bullet optimization.
       </p>
 
       {/* Main Action Buttons */}
       <div className="mb-14 flex flex-col sm:flex-row justify-center items-center gap-3">
         <Link
-          href="/input"
+          href="/input?new=true"
+          onClick={() => clearAllResumeData()}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-xs hover:shadow transition-all text-sm sm:text-base cursor-pointer"
         >
           <span>Start Creating Resume</span>
@@ -62,7 +66,7 @@ export default function HomePage() {
           </div>
           <div>
             <div className="text-xs font-bold text-slate-900">AI Enhancement</div>
-            <div className="text-[11px] text-slate-500">Gemini-refined bullets</div>
+            <div className="text-[11px] text-slate-500">AI-refined bullets</div>
           </div>
         </div>
 
@@ -99,7 +103,8 @@ export default function HomePage() {
             </p>
           </div>
           <Link
-            href="/input"
+            href="/input?new=true"
+            onClick={() => clearAllResumeData()}
             className="text-xs font-semibold text-blue-600 hover:text-blue-800 mt-2 sm:mt-0 flex items-center gap-1"
           >
             Get started now &rarr;
@@ -147,7 +152,7 @@ export default function HomePage() {
               </div>
               <h3 className="font-bold text-slate-900 text-sm mb-1.5">Review Extraction</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Check and edit facts structured by Gemini AI before generating your ATS resume.
+                Check and edit facts structured by AI before generating your ATS resume.
               </p>
             </div>
           </div>

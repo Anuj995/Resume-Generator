@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { extractTextFromPdf } from "@/lib/pdfExtractor";
 import StepIndicator from "@/components/StepIndicator";
+import { clearAllResumeData } from "@/lib/storage";
 
 const SAMPLE_PROFILE = `Alex Morgan
 alex.morgan@email.com | +1 (555) 019-2834 | San Francisco, CA | linkedin.com/in/alexmorgan
@@ -39,38 +40,73 @@ export default function InputPage() {
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [uploadedFileSize, setUploadedFileSize] = useState("");
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  // State to track if previous cached draft was loaded
+  const [hasExistingDraft, setHasExistingDraft] = useState(false);
 
   // Load existing input from localStorage on component mount
   useEffect(() => {
+    // If starting a fresh resume via ?new=true
+    if (typeof window !== "undefined" && window.location.search.includes("new=true")) {
+      clearAllResumeData();
+      setInputText("");
+      setUploadedFileName("");
+      setUploadedFileSize("");
+      setErrorMessage("");
+      setHasExistingDraft(false);
+      router.replace("/input");
+      return;
+    }
+
+    // Check if redirected due to missing info
+    if (typeof window !== "undefined" && window.location.search.includes("missing_info")) {
+      setErrorMessage("Please enter your resume information or upload a file first before proceeding.");
+    }
+
     const savedText = localStorage.getItem("resume_raw_text");
-    if (savedText) {
+    if (savedText && savedText.trim().length >= 25) {
       setInputText(savedText);
+      setHasExistingDraft(true);
     }
     const savedFileName = localStorage.getItem("resume_file_name");
     if (savedFileName) {
       setUploadedFileName(savedFileName);
     }
-  }, []);
+  }, [router]);
+
+  const handleClearAll = () => {
+    setInputText("");
+    setUploadedFileName("");
+    setUploadedFileSize("");
+    setErrorMessage("");
+    setHasExistingDraft(false);
+    clearAllResumeData();
+  };
 
   // Handle form submission to continue to next screen
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate that textarea is not empty
-    if (!inputText.trim()) {
-      setErrorMessage("Please enter your information or upload a resume first.");
+    const trimmed = inputText.trim();
+
+    // Validate that textarea has actual content (at least 25 characters)
+    if (!trimmed || trimmed.length < 25) {
+      setErrorMessage("Please enter your actual resume information or upload a resume file (minimum 25 characters).");
       return;
     }
 
-    // Save to localStorage so it persists across pages
-    localStorage.setItem("resume_raw_text", inputText.trim());
+    // Save fresh input to localStorage
+    const previousSavedText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (previousSavedText !== trimmed) {
+      // User changed their resume text, invalidate downstream parsed data and hashes
+      localStorage.removeItem("resume_data");
+      localStorage.removeItem("resume_extract_hash");
+      localStorage.removeItem("resume_tailored_hash");
+    }
+
+    localStorage.setItem("resume_raw_text", trimmed);
     if (uploadedFileName) {
       localStorage.setItem("resume_file_name", uploadedFileName);
-    } else {
-      localStorage.removeItem("resume_file_name");
     }
-    // Remove older cached resume_data so fresh info is extracted
-    localStorage.removeItem("resume_data");
     setErrorMessage("");
 
     // Navigate to role selection page
@@ -81,10 +117,12 @@ export default function InputPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Clear previous cache when uploading a new file
+      clearAllResumeData();
+      setHasExistingDraft(false);
       setIsProcessingFile(true);
       setUploadedFileName(file.name);
       localStorage.setItem("resume_file_name", file.name);
-      localStorage.removeItem("resume_data");
 
       // Calculate file size in KB/MB
       const sizeStr =
@@ -132,11 +170,21 @@ export default function InputPage() {
   // Dedicated handler for submitting the uploaded resume
   const handleSubmitUploadedResume = () => {
     const textToSave = inputText.trim();
-    if (textToSave) {
-      localStorage.setItem("resume_raw_text", textToSave);
+    if (!textToSave || textToSave.length < 25) {
+      setErrorMessage("Please ensure your uploaded resume contains readable text (at least 25 characters).");
+      return;
     }
-    localStorage.setItem("resume_file_name", uploadedFileName);
-    localStorage.removeItem("resume_data");
+    const previousSavedText = (localStorage.getItem("resume_raw_text") || "").trim();
+    if (previousSavedText !== textToSave) {
+      localStorage.removeItem("resume_data");
+      localStorage.removeItem("resume_extract_hash");
+      localStorage.removeItem("resume_tailored_hash");
+    }
+
+    localStorage.setItem("resume_raw_text", textToSave);
+    if (uploadedFileName) {
+      localStorage.setItem("resume_file_name", uploadedFileName);
+    }
     router.push("/role");
   };
 
@@ -144,14 +192,18 @@ export default function InputPage() {
   const handleRemoveFile = () => {
     setUploadedFileName("");
     setUploadedFileSize("");
-    localStorage.removeItem("resume_file_name");
-    localStorage.removeItem("resume_data");
+    setInputText("");
+    setHasExistingDraft(false);
+    clearAllResumeData();
   };
 
   const handleLoadSample = () => {
+    clearAllResumeData();
     setInputText(SAMPLE_PROFILE);
     setUploadedFileName("");
+    setUploadedFileSize("");
     setErrorMessage("");
+    setHasExistingDraft(false);
   };
 
   return (
@@ -167,6 +219,25 @@ export default function InputPage() {
           Upload an existing resume or paste your experience, skills, and projects below.
         </p>
       </div>
+
+      {/* Existing Draft Alert Banner */}
+      {hasExistingDraft && (
+        <div className="mb-6 p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl flex items-center justify-between text-xs text-amber-900 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📋</span>
+            <span>
+              <strong>Previous draft loaded:</strong> You can edit this info or wipe everything to start fresh.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="font-semibold text-rose-600 hover:text-rose-800 underline ml-2 cursor-pointer flex-shrink-0"
+          >
+            Clear Cache &amp; Start Fresh
+          </button>
+        </div>
+      )}
 
       {/* Upload Section Card */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs mb-6">
@@ -267,13 +338,24 @@ export default function InputPage() {
           <label htmlFor="rawInfo" className="block text-sm font-bold text-slate-900">
             Career, Education &amp; Project Details
           </label>
-          <button
-            type="button"
-            onClick={handleLoadSample}
-            className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
-          >
-            Load Sample Profile
-          </button>
+          <div className="flex items-center gap-3">
+            {inputText.trim() && (
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="text-xs text-slate-500 hover:text-rose-600 font-medium transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleLoadSample}
+              className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+            >
+              Load Sample Profile
+            </button>
+          </div>
         </div>
 
         <p className="text-xs text-slate-500 mb-3">
@@ -285,8 +367,13 @@ export default function InputPage() {
           rows={8}
           value={inputText}
           onChange={(e) => {
-            setInputText(e.target.value);
+            const val = e.target.value;
+            setInputText(val);
             if (errorMessage) setErrorMessage("");
+            if (!val.trim()) {
+              localStorage.removeItem("resume_raw_text");
+              localStorage.removeItem("resume_data");
+            }
           }}
           placeholder="Example:
 I have 3 years of experience as a Full Stack Developer at Acme Corp. Built React/Node.js web apps, optimized SQL queries, and integrated AWS S3. Graduated with a B.S. in Computer Science in 2021. Skilled in TypeScript, React, Next.js, Node.js, Docker, and PostgreSQL."
