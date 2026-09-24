@@ -327,17 +327,17 @@ export default function OrganizePage() {
       <StepIndicator currentStep={3} />
 
       {/* Page Heading */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Review Your Information
           </h1>
-          <p className="text-slate-600 text-sm mt-1">
+          <p className="text-slate-600 text-sm mt-1 leading-relaxed">
             Review and correct the facts extracted by AI before generating your ATS resume. You remain in complete control.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
           <button
             type="button"
             onClick={() => {
@@ -346,7 +346,7 @@ export default function OrganizePage() {
                 router.push("/input?new=true");
               }
             }}
-            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-rose-600 px-3.5 py-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 transition-all cursor-pointer whitespace-nowrap"
+            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-rose-600 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-rose-200 hover:bg-rose-50/50 transition-all cursor-pointer whitespace-nowrap"
             title="Clear all cached data and start fresh"
           >
             New Resume
@@ -356,21 +356,21 @@ export default function OrganizePage() {
             <button
               type="button"
               onClick={() => handleContinueToResume(true)}
-              className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer px-2"
+              className="text-xs text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-2 rounded-xl font-semibold transition-all cursor-pointer shadow-2xs whitespace-nowrap"
               title="Re-run AI tailoring if you made major changes"
             >
-              ✨ Re-tailor with AI
+              ✨ Re-tailor
             </button>
           )}
 
           <button
             onClick={() => handleContinueToResume(false)}
             disabled={isGenerating}
-            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold px-5 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-xs cursor-pointer whitespace-nowrap"
           >
             {isGenerating ? (
               <>
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Tailoring with AI...</span>
               </>
             ) : (
@@ -387,23 +387,23 @@ export default function OrganizePage() {
         {/* =========================================================================
             1. PERSONAL INFORMATION
             ========================================================================= */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
-          <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-            <span>👤</span>
+        <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+          <h2 className="text-base font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
+            <span className="text-base">👤</span>
             <span>Personal Information</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Full Name</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Full Name</label>
               <input
                 type="text"
                 value={resumeData.personalInfo?.fullName || ""}
                 onChange={(e) => updatePersonalInfo("fullName", e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Target Job Title</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Target Job Title</label>
               <input
                 type="text"
                 value={targetRole || resumeData.targetRole || ""}
@@ -411,64 +411,64 @@ export default function OrganizePage() {
                   setTargetRole(e.target.value);
                   setResumeData({ ...resumeData, targetRole: e.target.value });
                 }}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Email Address</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Email Address</label>
               <input
                 type="email"
                 value={resumeData.personalInfo?.email || ""}
                 onChange={(e) => updatePersonalInfo("email", e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Phone Number</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Phone Number</label>
               <input
                 type="text"
                 value={resumeData.personalInfo?.phone || ""}
                 onChange={(e) => updatePersonalInfo("phone", e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Location (City, State / Country)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Location (City, State / Country)</label>
               <input
                 type="text"
                 value={resumeData.personalInfo?.location || ""}
                 onChange={(e) => updatePersonalInfo("location", e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">LinkedIn Profile (URL or handle)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">LinkedIn Profile (URL or handle)</label>
               <input
                 type="text"
                 placeholder="linkedin.com/in/username"
                 value={resumeData.personalInfo?.linkedin || ""}
                 onChange={(e) => updatePersonalInfo("linkedin", e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">GitHub Profile (URL or handle)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">GitHub Profile (URL or handle)</label>
               <input
                 type="text"
                 placeholder="github.com/username"
                 value={resumeData.personalInfo?.github || ""}
                 onChange={(e) => updatePersonalInfo("github", e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Portfolio / Website</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Portfolio / Website</label>
               <input
                 type="text"
                 placeholder="yourportfolio.dev"
                 value={resumeData.personalInfo?.portfolio || ""}
                 onChange={(e) => updatePersonalInfo("portfolio", e.target.value)}
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 text-xs bg-white text-slate-900 focus:outline-none"
               />
             </div>
           </div>
@@ -477,12 +477,12 @@ export default function OrganizePage() {
         {/* =========================================================================
             2. PROFESSIONAL SUMMARY
             ========================================================================= */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
-          <h2 className="text-base font-bold text-slate-900 mb-2 pb-2 border-b border-slate-100 flex items-center gap-2">
-            <span>📝</span>
+        <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+          <h2 className="text-base font-bold text-slate-900 mb-2 pb-3 border-b border-slate-100 flex items-center gap-2">
+            <span className="text-base">📝</span>
             <span>Professional Summary</span>
           </h2>
-          <p className="text-xs text-slate-500 mb-2">
+          <p className="text-xs text-slate-500 mb-3 leading-relaxed">
             A 2–3 line summary highlighting your relevant skills for {targetRole || "your role"}.
           </p>
           <textarea
@@ -490,70 +490,70 @@ export default function OrganizePage() {
             value={resumeData.summary || ""}
             onChange={(e) => setResumeData({ ...resumeData, summary: e.target.value })}
             placeholder="Results-oriented developer with hands-on experience in React, JavaScript, and building web applications..."
-            className="w-full border border-slate-300 rounded-lg p-3 text-xs focus:border-blue-500 focus:outline-none"
+            className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3.5 text-xs text-slate-900 leading-relaxed focus:outline-none"
           />
         </div>
 
         {/* =========================================================================
             3. TECHNICAL SKILLS
             ========================================================================= */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
-          <h2 className="text-base font-bold text-slate-900 mb-2 pb-2 border-b border-slate-100 flex items-center gap-2">
-            <span>⚡</span>
+        <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+          <h2 className="text-base font-bold text-slate-900 mb-2 pb-3 border-b border-slate-100 flex items-center gap-2">
+            <span className="text-base">⚡</span>
             <span>Technical Skills</span>
           </h2>
-          <p className="text-xs text-slate-500 mb-3">
+          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
             Group your skills into standard text categories (comma-separated). No skill bars or percentage ratings are used in ATS resumes.
           </p>
-          <div className="space-y-3 text-xs">
+          <div className="space-y-3.5 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Languages (e.g. Python, JavaScript, Java, SQL)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Languages (e.g. Python, JavaScript, Java, SQL)</label>
               <input
                 type="text"
                 value={resumeData.categorizedSkills?.languages?.join(", ") || ""}
                 onChange={(e) => updateCategorizedSkills("languages", e.target.value)}
                 placeholder="Python, JavaScript, TypeScript, C++, SQL"
-                className="w-full border border-slate-300 rounded-lg p-2.5 focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 focus:outline-none text-slate-900"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Web &amp; Frameworks (e.g. React, Next.js, Node.js, Express)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Web &amp; Frameworks (e.g. React, Next.js, Node.js, Express)</label>
               <input
                 type="text"
                 value={resumeData.categorizedSkills?.frameworks?.join(", ") || ""}
                 onChange={(e) => updateCategorizedSkills("frameworks", e.target.value)}
                 placeholder="React.js, Next.js, Node.js, Tailwind CSS, HTML5, CSS3"
-                className="w-full border border-slate-300 rounded-lg p-2.5 focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 focus:outline-none text-slate-900"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Databases (e.g. MySQL, PostgreSQL, MongoDB)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Databases (e.g. MySQL, PostgreSQL, MongoDB)</label>
               <input
                 type="text"
                 value={resumeData.categorizedSkills?.databases?.join(", ") || ""}
                 onChange={(e) => updateCategorizedSkills("databases", e.target.value)}
                 placeholder="PostgreSQL, MySQL, MongoDB, Firebase"
-                className="w-full border border-slate-300 rounded-lg p-2.5 focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 focus:outline-none text-slate-900"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Tools &amp; Platforms (e.g. Git, GitHub, VS Code, Docker, Figma)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">Tools &amp; Platforms (e.g. Git, GitHub, VS Code, Docker, Figma)</label>
               <input
                 type="text"
                 value={resumeData.categorizedSkills?.tools?.join(", ") || ""}
                 onChange={(e) => updateCategorizedSkills("tools", e.target.value)}
                 placeholder="Git, GitHub, Docker, VS Code, Postman, Linux"
-                className="w-full border border-slate-300 rounded-lg p-2.5 focus:border-blue-500 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3 focus:outline-none text-slate-900"
               />
             </div>
             <div className="pt-2">
-              <label className="block font-semibold text-slate-700 mb-1">All Skills (Flat List Backup)</label>
+              <label className="block font-semibold text-slate-700 mb-1.5">All Skills (Flat List Backup)</label>
               <input
                 type="text"
                 value={resumeData.skills?.join(", ") || ""}
                 onChange={(e) => updateFlatSkills(e.target.value)}
                 placeholder="Python, React, SQL, Git..."
-                className="w-full border border-slate-200 rounded-lg p-2 focus:border-blue-500 focus:outline-none text-slate-600"
+                className="w-full border border-slate-200 rounded-xl p-2.5 focus:border-blue-500 focus:outline-none text-slate-600 bg-slate-50/50"
               />
             </div>
           </div>
@@ -562,69 +562,69 @@ export default function OrganizePage() {
         {/* =========================================================================
             4. WORK EXPERIENCE
             ========================================================================= */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+        <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>💼</span>
+              <span className="text-base">💼</span>
               <span>Work Experience</span>
             </h2>
             <button
               type="button"
               onClick={addExperience}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+              className="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
             >
               + Add Experience
             </button>
           </div>
           <div className="space-y-4">
             {resumeData.experience.map((exp, index) => (
-              <div key={exp.id || index} className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3 text-xs">
+              <div key={exp.id || index} className="p-4 sm:p-5 bg-slate-50/70 border border-slate-200/90 rounded-2xl space-y-3 text-xs">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-slate-800">Experience #{index + 1}</span>
                   <button
                     type="button"
                     onClick={() => removeExperience(index)}
-                    className="text-rose-600 hover:text-rose-800 font-semibold"
+                    className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">Job Title</label>
+                    <label className="block font-semibold text-slate-600 mb-1">Job Title</label>
                     <input
                       type="text"
                       value={exp.title}
                       onChange={(e) => updateExperience(index, "title", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">Company &amp; Location</label>
+                    <label className="block font-semibold text-slate-600 mb-1">Company &amp; Location</label>
                     <input
                       type="text"
                       value={exp.company}
                       onChange={(e) => updateExperience(index, "company", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">Duration</label>
+                    <label className="block font-semibold text-slate-600 mb-1">Duration</label>
                     <input
                       type="text"
                       value={exp.duration}
                       onChange={(e) => updateExperience(index, "duration", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-600 mb-1">Responsibilities &amp; Achievements (one bullet per line)</label>
+                  <label className="block font-semibold text-slate-600 mb-1">Responsibilities &amp; Achievements (one bullet per line)</label>
                   <textarea
                     rows={3}
                     value={exp.description}
                     onChange={(e) => updateExperience(index, "description", e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none leading-relaxed"
+                    className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-3 focus:outline-none leading-relaxed text-slate-900"
                   />
                 </div>
               </div>
@@ -635,61 +635,61 @@ export default function OrganizePage() {
         {/* =========================================================================
             5. PROJECTS
             ========================================================================= */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+        <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>🚀</span>
+              <span className="text-base">🚀</span>
               <span>Projects</span>
             </h2>
             <button
               type="button"
               onClick={addProject}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+              className="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
             >
               + Add Project
             </button>
           </div>
           <div className="space-y-4">
             {resumeData.projects.map((proj, index) => (
-              <div key={proj.id || index} className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3 text-xs">
+              <div key={proj.id || index} className="p-4 sm:p-5 bg-slate-50/70 border border-slate-200/90 rounded-2xl space-y-3 text-xs">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-slate-800">Project #{index + 1}</span>
                   <button
                     type="button"
                     onClick={() => removeProject(index)}
-                    className="text-rose-600 hover:text-rose-800 font-semibold"
+                    className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">Project Name</label>
+                    <label className="block font-semibold text-slate-600 mb-1">Project Name</label>
                     <input
                       type="text"
                       value={proj.title}
                       onChange={(e) => updateProject(index, "title", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">Technologies Used</label>
+                    <label className="block font-semibold text-slate-600 mb-1">Technologies Used</label>
                     <input
                       type="text"
                       value={proj.technologies || ""}
                       onChange={(e) => updateProject(index, "technologies", e.target.value)}
                       placeholder="React, JavaScript, HTML, CSS"
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-600 mb-1">Description (what you implemented, key results)</label>
+                  <label className="block font-semibold text-slate-600 mb-1">Description (what you implemented, key results)</label>
                   <textarea
                     rows={3}
                     value={proj.description}
                     onChange={(e) => updateProject(index, "description", e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none leading-relaxed"
+                    className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-3 focus:outline-none leading-relaxed text-slate-900"
                   />
                 </div>
               </div>
@@ -700,69 +700,69 @@ export default function OrganizePage() {
         {/* =========================================================================
             6. EDUCATION
             ========================================================================= */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+        <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>🎓</span>
+              <span className="text-base">🎓</span>
               <span>Education</span>
             </h2>
             <button
               type="button"
               onClick={addEducation}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+              className="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
             >
               + Add Education
             </button>
           </div>
           <div className="space-y-4">
             {resumeData.education.map((edu, index) => (
-              <div key={edu.id || index} className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3 text-xs">
+              <div key={edu.id || index} className="p-4 sm:p-5 bg-slate-50/70 border border-slate-200/90 rounded-2xl space-y-3 text-xs">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-slate-800">Education #{index + 1}</span>
                   <button
                     type="button"
                     onClick={() => removeEducation(index)}
-                    className="text-rose-600 hover:text-rose-800 font-semibold"
+                    className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer"
                   >
                     Remove
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">Degree / Course</label>
+                    <label className="block font-semibold text-slate-600 mb-1">Degree / Course</label>
                     <input
                       type="text"
                       value={edu.degree}
                       onChange={(e) => updateEducation(index, "degree", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">College / University Name</label>
+                    <label className="block font-semibold text-slate-600 mb-1">College / University Name</label>
                     <input
                       type="text"
                       value={edu.institution}
                       onChange={(e) => updateEducation(index, "institution", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">Graduation Year / Range</label>
+                    <label className="block font-semibold text-slate-600 mb-1">Graduation Year / Range</label>
                     <input
                       type="text"
                       value={edu.year}
                       onChange={(e) => updateEducation(index, "year", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                   <div>
-                    <label className="block font-medium text-slate-600 mb-1">CGPA / Percentage (Optional)</label>
+                    <label className="block font-semibold text-slate-600 mb-1">CGPA / Percentage (Optional)</label>
                     <input
                       type="text"
                       placeholder="8.2/10 or 85%"
                       value={edu.cgpa || ""}
                       onChange={(e) => updateEducation(index, "cgpa", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-2 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-xl p-2.5 focus:outline-none text-slate-900"
                     />
                   </div>
                 </div>
@@ -776,26 +776,29 @@ export default function OrganizePage() {
             ========================================================================= */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Certifications */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-              <h2 className="text-sm font-bold text-slate-900">📜 Certifications</h2>
+          <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+            <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <span>📜</span>
+                <span>Certifications</span>
+              </h2>
               <button
                 type="button"
                 onClick={addCertification}
-                className="text-xs font-semibold text-blue-600"
+                className="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
               >
                 + Add
               </button>
             </div>
             <div className="space-y-3">
               {resumeData.certifications.map((cert, index) => (
-                <div key={cert.id || index} className="p-3 bg-slate-50 rounded-lg space-y-2 text-xs">
+                <div key={cert.id || index} className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-2 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-slate-700">#{index + 1}</span>
                     <button
                       type="button"
                       onClick={() => removeCertification(index)}
-                      className="text-rose-600 text-[11px]"
+                      className="text-rose-600 text-xs font-semibold hover:underline cursor-pointer"
                     >
                       Remove
                     </button>
@@ -805,7 +808,7 @@ export default function OrganizePage() {
                     placeholder="Certification Name"
                     value={cert.name}
                     onChange={(e) => updateCertification(index, "name", e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded p-1.5 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-lg p-2 text-slate-900 focus:outline-none"
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -813,14 +816,14 @@ export default function OrganizePage() {
                       placeholder="Issuer (e.g. Coursera)"
                       value={cert.issuer || ""}
                       onChange={(e) => updateCertification(index, "issuer", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-1.5 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-lg p-2 text-slate-900 focus:outline-none"
                     />
                     <input
                       type="text"
                       placeholder="Year (e.g. 2025)"
                       value={cert.year || ""}
                       onChange={(e) => updateCertification(index, "year", e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded p-1.5 focus:outline-none"
+                      className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-lg p-2 text-slate-900 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -829,26 +832,29 @@ export default function OrganizePage() {
           </div>
 
           {/* Achievements */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-              <h2 className="text-sm font-bold text-slate-900">🏆 Achievements</h2>
+          <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+            <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <span>🏆</span>
+                <span>Achievements</span>
+              </h2>
               <button
                 type="button"
                 onClick={addAchievement}
-                className="text-xs font-semibold text-blue-600"
+                className="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
               >
                 + Add
               </button>
             </div>
             <div className="space-y-3">
               {resumeData.achievements.map((ach, index) => (
-                <div key={ach.id || index} className="p-3 bg-slate-50 rounded-lg space-y-2 text-xs">
+                <div key={ach.id || index} className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-2 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-slate-700">#{index + 1}</span>
                     <button
                       type="button"
                       onClick={() => removeAchievement(index)}
-                      className="text-rose-600 text-[11px]"
+                      className="text-rose-600 text-xs font-semibold hover:underline cursor-pointer"
                     >
                       Remove
                     </button>
@@ -858,7 +864,7 @@ export default function OrganizePage() {
                     value={ach.description}
                     onChange={(e) => updateAchievement(index, e.target.value)}
                     placeholder="Secured 2nd place in coding competition..."
-                    className="w-full bg-white border border-slate-300 rounded p-1.5 focus:outline-none"
+                    className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-lg p-2 text-slate-900 focus:outline-none leading-relaxed"
                   />
                 </div>
               ))}
@@ -869,35 +875,38 @@ export default function OrganizePage() {
         {/* =========================================================================
             8. OPTIONAL SECTIONS: HACKATHONS
             ========================================================================= */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div className="glass-panel weightless-card rounded-2xl p-5 sm:p-6 border border-slate-200/90">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
             <div>
-              <h2 className="text-sm font-bold text-slate-900">💡 Hackathons &amp; Competitions (Optional)</h2>
-              <p className="text-[11px] text-slate-500">Only rendered on the resume if you add entries here.</p>
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <span>💡</span>
+                <span>Hackathons &amp; Competitions (Optional)</span>
+              </h2>
+              <p className="text-[11px] text-slate-500 mt-0.5">Only rendered on the resume if you add entries here.</p>
             </div>
             <button
               type="button"
               onClick={addHackathon}
-              className="text-xs font-semibold text-blue-600"
+              className="text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-2xs"
             >
               + Add Hackathon
             </button>
           </div>
           <div className="space-y-3">
             {(resumeData.hackathons || []).map((h, index) => (
-              <div key={h.id || index} className="p-3 bg-slate-50 rounded-lg space-y-2 text-xs">
+              <div key={h.id || index} className="p-3.5 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-2 text-xs">
                 <div className="flex justify-between items-center">
                   <input
                     type="text"
                     placeholder="Hackathon Title (e.g. Smart India Hackathon)"
                     value={h.title}
                     onChange={(e) => updateHackathon(index, "title", e.target.value)}
-                    className="w-2/3 bg-white border border-slate-300 rounded p-1.5 font-semibold focus:outline-none"
+                    className="w-2/3 bg-white border border-slate-200 focus:border-blue-500 rounded-lg p-2 font-semibold text-slate-900 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => removeHackathon(index)}
-                    className="text-rose-600 text-[11px]"
+                    className="text-rose-600 text-xs font-semibold hover:underline cursor-pointer"
                   >
                     Remove
                   </button>
@@ -907,7 +916,7 @@ export default function OrganizePage() {
                   value={h.description}
                   onChange={(e) => updateHackathon(index, "description", e.target.value)}
                   placeholder="Built prototype, finished in Top 10..."
-                  className="w-full bg-white border border-slate-300 rounded p-1.5 focus:outline-none"
+                  className="w-full bg-white border border-slate-200 focus:border-blue-500 rounded-lg p-2 text-slate-900 focus:outline-none leading-relaxed"
                 />
               </div>
             ))}
@@ -915,12 +924,13 @@ export default function OrganizePage() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+        <div className="flex items-center justify-between pt-5 border-t border-slate-200">
           <Link
             href="/role"
-            className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900"
+            className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1"
           >
-            &larr; Back to Target Role
+            <span>&larr;</span>
+            <span>Back to Target Role</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -928,7 +938,7 @@ export default function OrganizePage() {
               <button
                 type="button"
                 onClick={() => handleContinueToResume(true)}
-                className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+                className="text-xs text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-2 rounded-xl font-semibold transition-all cursor-pointer shadow-2xs"
                 title="Re-run AI tailoring if you made major changes"
               >
                 ✨ Re-tailor with AI
@@ -938,7 +948,7 @@ export default function OrganizePage() {
             <button
               onClick={() => handleContinueToResume(false)}
               disabled={isGenerating}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
             >
               {isGenerating ? (
                 <>

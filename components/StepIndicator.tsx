@@ -16,20 +16,25 @@ const STEPS = [
 
 export default function StepIndicator({ currentStep }: StepIndicatorProps) {
   return (
-    <div className="mb-6 print:hidden">
+    <div className="mb-6 sm:mb-8 print:hidden">
       {/* Mobile condensed indicator */}
-      <div className="flex sm:hidden items-center justify-between bg-white border border-slate-200/80 rounded-lg px-3.5 py-2 text-xs shadow-2xs">
-        <span className="font-semibold text-slate-700">
-          Step {currentStep} of 5:{" "}
-          <span className="text-blue-600">{STEPS[currentStep - 1].label}</span>
-        </span>
-        <div className="flex items-center gap-1">
+      <div className="flex sm:hidden items-center justify-between bg-white border border-slate-200/90 rounded-xl px-4 py-2.5 text-xs shadow-xs">
+        <div className="flex items-center gap-2">
+          <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px]">
+            {currentStep}
+          </span>
+          <span className="font-medium text-slate-600">
+            Step {currentStep} of 5:{" "}
+            <span className="text-slate-900 font-bold">{STEPS[currentStep - 1].label}</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
           {STEPS.map((s) => (
             <span
               key={s.step}
-              className={`w-2 h-2 rounded-full transition-colors ${
+              className={`w-2 h-2 rounded-full transition-all ${
                 s.step === currentStep
-                  ? "bg-blue-600 ring-2 ring-blue-100"
+                  ? "bg-blue-600 ring-4 ring-blue-500/20 scale-110"
                   : s.step < currentStep
                   ? "bg-emerald-500"
                   : "bg-slate-200"
@@ -40,31 +45,30 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
       </div>
 
       {/* Desktop/tablet horizontal stepper */}
-      <div className="hidden sm:flex items-center justify-between bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs">
+      <div className="hidden sm:flex items-center justify-between bg-white border border-slate-200/90 rounded-2xl px-5 py-3 shadow-xs">
         {STEPS.map((item, idx) => {
           const isCompleted = item.step < currentStep;
           const isCurrent = item.step === currentStep;
-          const isUpcoming = item.step > currentStep;
 
           const content = (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 group">
               <span
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+                className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
                   isCurrent
-                    ? "bg-blue-600 text-white shadow-2xs ring-2 ring-blue-100"
+                    ? "bg-blue-600 text-white shadow-xs ring-4 ring-blue-500/15"
                     : isCompleted
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-500"
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200/80 group-hover:bg-emerald-100/80"
+                    : "bg-slate-100 text-slate-400 border border-transparent"
                 }`}
               >
                 {isCompleted ? "✓" : item.step}
               </span>
               <span
-                className={`text-xs font-medium transition-colors ${
+                className={`text-xs font-semibold tracking-tight transition-colors ${
                   isCurrent
-                    ? "text-blue-700 font-semibold"
+                    ? "text-blue-700 font-bold"
                     : isCompleted
-                    ? "text-slate-700"
+                    ? "text-slate-700 group-hover:text-slate-900"
                     : "text-slate-400"
                 }`}
               >
@@ -78,7 +82,7 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
               {isCompleted ? (
                 <Link
                   href={item.href}
-                  className="hover:opacity-80 transition-opacity focus:outline-none"
+                  className="hover:opacity-90 transition-opacity focus:outline-none"
                   title={`Go back to ${item.label}`}
                 >
                   {content}
@@ -89,8 +93,8 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
 
               {idx < STEPS.length - 1 && (
                 <div
-                  className={`flex-1 h-[2px] mx-2 rounded transition-colors ${
-                    item.step < currentStep ? "bg-emerald-200" : "bg-slate-100"
+                  className={`flex-1 h-[2px] mx-3 rounded-full transition-colors ${
+                    item.step < currentStep ? "bg-emerald-300" : "bg-slate-100"
                   }`}
                 />
               )}

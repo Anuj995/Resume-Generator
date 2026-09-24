@@ -418,28 +418,28 @@ export default function InputPage() {
       <StepIndicator currentStep={1} />
 
       {/* Main Page Heading */}
-      <div className="text-center sm:text-left mb-6">
+      <div className="text-center sm:text-left mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           How would you like to provide your information?
         </h1>
-        <p className="text-slate-600 text-sm sm:text-base mt-1.5">
-          Choose one of the methods below to provide your career details.
+        <p className="text-slate-600 text-sm sm:text-base mt-1.5 leading-relaxed">
+          Choose any of the four options below to supply your career history and skills.
         </p>
       </div>
 
       {/* Existing Draft Alert Banner */}
       {hasExistingDraft && (
-        <div className="mb-6 p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl flex items-center justify-between text-xs text-amber-900 shadow-2xs">
-          <div className="flex items-center gap-2">
-            <span className="text-base">📋</span>
+        <div className="mb-6 p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl flex items-center justify-between text-xs text-amber-950 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="text-lg">📋</span>
             <span>
-              <strong>Previous draft loaded:</strong> You can edit this info or wipe everything to start fresh.
+              <strong>Draft loaded from browser storage:</strong> You can continue editing below or wipe cache.
             </span>
           </div>
           <button
             type="button"
             onClick={handleClearAll}
-            className="font-semibold text-rose-600 hover:text-rose-800 underline ml-2 cursor-pointer flex-shrink-0"
+            className="font-bold text-rose-600 hover:text-rose-800 underline ml-2 cursor-pointer flex-shrink-0"
           >
             Clear Cache &amp; Start Fresh
           </button>
@@ -447,40 +447,46 @@ export default function InputPage() {
       )}
 
       {/* Four Method Selector Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         {/* Card 1: Enter Information */}
         <div
           onClick={() => {
             setActiveMethod("manual");
             setErrorMessage("");
           }}
-          className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition-all select-none flex flex-col justify-between ${
+          className={`cursor-pointer rounded-2xl p-5 select-none flex flex-col justify-between transition-all duration-300 ${
             activeMethod === "manual"
-              ? "bg-blue-50/50 border-blue-600 shadow-sm ring-2 ring-blue-500/20"
-              : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs"
+              ? "glass-panel-elevated ring-4 ring-blue-500/15 border-blue-600 bg-white/95 shadow-md -translate-y-1"
+              : "glass-panel weightless-card hover:-translate-y-1 hover:border-slate-300"
           }`}
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg">✍️</span>
-              {activeMethod === "manual" && (
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                  Selected
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-100/60 border border-blue-200/60 flex items-center justify-center text-lg">
+                ✍️
+              </div>
+              {activeMethod === "manual" ? (
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-full shadow-xs">
+                  Active
                 </span>
+              ) : (
+                <span className="text-xs text-slate-400 group-hover:text-slate-600">&rarr;</span>
               )}
             </div>
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+            <h3 className="font-bold text-slate-900 text-base">
               Enter Information
             </h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Paste your achievements, skills, education and experience.
+              Paste your achievements, skills, education, and career experience.
             </p>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span className={`text-xs font-semibold ${activeMethod === "manual" ? "text-blue-700 font-bold" : "text-slate-600"}`}>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span className={`font-semibold ${activeMethod === "manual" ? "text-blue-700" : "text-slate-500"}`}>
               Manual Input
             </span>
-            <span className="text-xs text-slate-400">&rarr;</span>
+            <span className={`font-medium ${activeMethod === "manual" ? "text-blue-600" : "text-slate-400"}`}>
+              {activeMethod === "manual" ? "Editing below" : "Select"}
+            </span>
           </div>
         </div>
 
@@ -490,33 +496,39 @@ export default function InputPage() {
             setActiveMethod("upload");
             setErrorMessage("");
           }}
-          className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition-all select-none flex flex-col justify-between ${
+          className={`cursor-pointer rounded-2xl p-5 select-none flex flex-col justify-between transition-all duration-300 ${
             activeMethod === "upload"
-              ? "bg-blue-50/50 border-blue-600 shadow-sm ring-2 ring-blue-500/20"
-              : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs"
+              ? "glass-panel-elevated ring-4 ring-blue-500/15 border-blue-600 bg-white/95 shadow-md -translate-y-1"
+              : "glass-panel weightless-card hover:-translate-y-1 hover:border-slate-300"
           }`}
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg">📄</span>
-              {activeMethod === "upload" && (
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                  Selected
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100/60 border border-emerald-200/60 flex items-center justify-center text-lg">
+                📄
+              </div>
+              {activeMethod === "upload" ? (
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-full shadow-xs">
+                  Active
                 </span>
+              ) : (
+                <span className="text-xs text-slate-400 group-hover:text-slate-600">&rarr;</span>
               )}
             </div>
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+            <h3 className="font-bold text-slate-900 text-base">
               Upload Resume
             </h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Upload an existing PDF or DOCX resume.
+              Upload an existing PDF or DOCX resume to extract data automatically.
             </p>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span className={`text-xs font-semibold ${activeMethod === "upload" ? "text-blue-700 font-bold" : "text-slate-600"}`}>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span className={`font-semibold ${activeMethod === "upload" ? "text-blue-700" : "text-slate-500"}`}>
               PDF / DOCX
             </span>
-            <span className="text-xs text-slate-400">&rarr;</span>
+            <span className={`font-medium ${activeMethod === "upload" ? "text-blue-600" : "text-slate-400"}`}>
+              {activeMethod === "upload" ? "Editing below" : "Select"}
+            </span>
           </div>
         </div>
 
@@ -526,33 +538,39 @@ export default function InputPage() {
             setActiveMethod("github");
             setErrorMessage("");
           }}
-          className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition-all select-none flex flex-col justify-between ${
+          className={`cursor-pointer rounded-2xl p-5 select-none flex flex-col justify-between transition-all duration-300 ${
             activeMethod === "github"
-              ? "bg-blue-50/50 border-blue-600 shadow-sm ring-2 ring-blue-500/20"
-              : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs"
+              ? "glass-panel-elevated ring-4 ring-blue-500/15 border-blue-600 bg-white/95 shadow-md -translate-y-1"
+              : "glass-panel weightless-card hover:-translate-y-1 hover:border-slate-300"
           }`}
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg">🐙</span>
-              {activeMethod === "github" && (
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                  Selected
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-lg">
+                🐙
+              </div>
+              {activeMethod === "github" ? (
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-full shadow-xs">
+                  Active
                 </span>
+              ) : (
+                <span className="text-xs text-slate-400 group-hover:text-slate-600">&rarr;</span>
               )}
             </div>
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+            <h3 className="font-bold text-slate-900 text-base">
               GitHub Profile
             </h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Use your GitHub repositories and technical activity.
+              Import public repositories, tech stacks, and open-source projects.
             </p>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span className={`text-xs font-semibold ${activeMethod === "github" ? "text-blue-700 font-bold" : "text-slate-600"}`}>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span className={`font-semibold ${activeMethod === "github" ? "text-blue-700" : "text-slate-500"}`}>
               Public Repositories
             </span>
-            <span className="text-xs text-slate-400">&rarr;</span>
+            <span className={`font-medium ${activeMethod === "github" ? "text-blue-600" : "text-slate-400"}`}>
+              {activeMethod === "github" ? "Editing below" : "Select"}
+            </span>
           </div>
         </div>
 
@@ -562,41 +580,47 @@ export default function InputPage() {
             setActiveMethod("linkedin");
             setErrorMessage("");
           }}
-          className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition-all select-none flex flex-col justify-between ${
+          className={`cursor-pointer rounded-2xl p-5 select-none flex flex-col justify-between transition-all duration-300 ${
             activeMethod === "linkedin"
-              ? "bg-blue-50/50 border-blue-600 shadow-sm ring-2 ring-blue-500/20"
-              : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs"
+              ? "glass-panel-elevated ring-4 ring-blue-500/15 border-blue-600 bg-white/95 shadow-md -translate-y-1"
+              : "glass-panel weightless-card hover:-translate-y-1 hover:border-slate-300"
           }`}
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg">💼</span>
-              {activeMethod === "linkedin" && (
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                  Selected
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200/60 flex items-center justify-center text-lg">
+                💼
+              </div>
+              {activeMethod === "linkedin" ? (
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-full shadow-xs">
+                  Active
                 </span>
+              ) : (
+                <span className="text-xs text-slate-400 group-hover:text-slate-600">&rarr;</span>
               )}
             </div>
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+            <h3 className="font-bold text-slate-900 text-base">
               LinkedIn Profile
             </h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Use information from your LinkedIn profile.
+              Use information from your LinkedIn profile via paste or PDF.
             </p>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span className={`text-xs font-semibold ${activeMethod === "linkedin" ? "text-blue-700 font-bold" : "text-slate-600"}`}>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span className={`font-semibold ${activeMethod === "linkedin" ? "text-blue-700" : "text-slate-500"}`}>
               Paste or PDF
             </span>
-            <span className="text-xs text-slate-400">&rarr;</span>
+            <span className={`font-medium ${activeMethod === "linkedin" ? "text-blue-600" : "text-slate-400"}`}>
+              {activeMethod === "linkedin" ? "Editing below" : "Select"}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Global Validation Error Message */}
       {errorMessage && (
-        <div className="mb-6 text-xs text-rose-700 bg-rose-50 border border-rose-200/80 rounded-xl p-3 flex items-center gap-2 font-medium">
-          <span>⚠️</span>
+        <div className="mb-6 text-xs text-rose-700 bg-rose-50 border border-rose-200/80 rounded-2xl p-3.5 flex items-center gap-2 font-medium shadow-2xs">
+          <span className="text-sm">⚠️</span>
           <span>{errorMessage}</span>
         </div>
       )}
@@ -605,17 +629,17 @@ export default function InputPage() {
       {/* ACTIVE METHOD 1: Enter Information Manually                         */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {activeMethod === "manual" && (
-        <form onSubmit={handleManualSubmit} className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
-          <div className="flex items-center justify-between mb-2">
+        <form onSubmit={handleManualSubmit} className="glass-panel-elevated rounded-2xl p-5 sm:p-6 shadow-md border border-slate-200/90">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
             <label htmlFor="rawInfo" className="block text-sm font-bold text-slate-900">
               Paste or Enter Your Information
             </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 self-start sm:self-auto">
               {inputText.trim() && (
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-xs text-slate-500 hover:text-rose-600 font-medium transition-colors cursor-pointer"
+                  className="text-xs text-slate-400 hover:text-rose-600 font-medium transition-colors cursor-pointer"
                 >
                   Clear
                 </button>
@@ -623,47 +647,56 @@ export default function InputPage() {
               <button
                 type="button"
                 onClick={handleLoadSample}
-                className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline cursor-pointer"
+                className="text-xs text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer shadow-2xs"
               >
-                Load Sample Profile
+                Load Sample Profile ✨
               </button>
             </div>
           </div>
 
-          <p className="text-xs text-slate-500 mb-3">
-            Paste your achievements, skills, education and experience. AI will organize it into a structured ATS resume.
+          <p className="text-xs text-slate-500 mb-3.5 leading-relaxed">
+            Paste your achievements, technical projects, work experience, education, and skills. AI will organize it into ATS structure.
           </p>
 
-          <textarea
-            id="rawInfo"
-            rows={8}
-            value={inputText}
-            onChange={(e) => {
-              const val = e.target.value;
-              setInputText(val);
-              if (errorMessage) setErrorMessage("");
-              if (val.trim().length < 25) {
-                localStorage.removeItem("resume_raw_text");
-                localStorage.removeItem("resume_data");
-                notifyStorageChange();
-              }
-            }}
-            placeholder="I completed a React course, built three websites, participated in two hackathons, worked as a software development intern..."
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl p-3.5 text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:outline-none"
-          />
+          <div className="relative">
+            <textarea
+              id="rawInfo"
+              rows={9}
+              value={inputText}
+              onChange={(e) => {
+                const val = e.target.value;
+                setInputText(val);
+                if (errorMessage) setErrorMessage("");
+                if (val.trim().length < 25) {
+                  localStorage.removeItem("resume_raw_text");
+                  localStorage.removeItem("resume_data");
+                  notifyStorageChange();
+                }
+              }}
+              placeholder="e.g. Alex Morgan, Software Engineer intern. Built a React dashboard with 5k users, completed B.S. in Computer Science with 3.8 GPA, skilled in TypeScript, Python, and SQL..."
+              className="w-full border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl p-4 text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:outline-none"
+            />
+            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 px-1">
+              <span>Minimum 25 characters required</span>
+              <span className={`font-mono font-medium ${inputText.trim().length >= 25 ? "text-emerald-600" : "text-slate-400"}`}>
+                {inputText.trim().length >= 25 ? "✓ " : ""}{inputText.trim().length} chars
+              </span>
+            </div>
+          </div>
 
           <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-100">
             <Link
               href="/"
-              className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1"
             >
-              &larr; Back to Home
+              <span>&larr;</span>
+              <span>Back to Home</span>
             </Link>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-xs hover:shadow cursor-pointer"
             >
-              <span>Continue</span>
+              <span>Continue to Select Role</span>
               <span>&rarr;</span>
             </button>
           </div>
@@ -674,22 +707,22 @@ export default function InputPage() {
       {/* ACTIVE METHOD 2: Upload Resume                                      */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {activeMethod === "upload" && (
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
+        <div className="glass-panel-elevated rounded-2xl p-5 sm:p-6 shadow-md border border-slate-200/90">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-sm font-bold text-slate-900">
               Upload Resume Document
             </h2>
-            <span className="text-[11px] bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-full border border-blue-200/60">
+            <span className="text-[11px] bg-blue-50 text-blue-700 font-semibold px-2.5 py-0.5 rounded-full border border-blue-200/70">
               PDF or DOCX
             </span>
           </div>
-          <p className="text-xs text-slate-500 mb-4">
+          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
             Upload an existing PDF or DOCX resume to extract your career history automatically.
           </p>
 
           {!uploadedFileName ? (
-            <label className="group cursor-pointer border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50/60 hover:bg-blue-50/20 rounded-xl p-8 transition-all flex flex-col items-center justify-center text-center">
-              <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-200/70 flex items-center justify-center text-blue-600 mb-3 group-hover:scale-110 transition-transform">
+            <label className="group cursor-pointer border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20 rounded-2xl p-8 sm:p-10 transition-all flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-blue-600 mb-3 group-hover:scale-105 transition-transform shadow-2xs">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
@@ -698,7 +731,7 @@ export default function InputPage() {
                 Click to browse or drop resume here
               </span>
               <span className="text-xs text-slate-400 mt-1">
-                Supports PDF or DOCX (Max 10MB)
+                Supports PDF, DOCX, or DOC (Max 10MB)
               </span>
               <input
                 type="file"
@@ -709,16 +742,16 @@ export default function InputPage() {
             </label>
           ) : (
             <div className="space-y-4">
-              <div className="flex items-center justify-between bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5">
+              <div className="flex items-center justify-between bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-4 shadow-2xs">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center text-emerald-700 font-bold text-xs flex-shrink-0">
-                    FILE
+                  <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-xl flex items-center justify-center text-emerald-700 font-bold text-xs flex-shrink-0">
+                    PDF
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-emerald-950 truncate">
+                    <p className="text-sm font-bold text-emerald-950 truncate">
                       {uploadedFileName}
                     </p>
-                    <p className="text-xs text-emerald-700">
+                    <p className="text-xs text-emerald-700 font-medium">
                       {uploadedFileSize ? `${uploadedFileSize} • ` : ""}
                       {isProcessingFile ? "Extracting text..." : "Content extracted successfully"}
                     </p>
@@ -728,7 +761,7 @@ export default function InputPage() {
                 <button
                   type="button"
                   onClick={handleRemoveFile}
-                  className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2.5 py-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="text-xs text-rose-600 hover:text-rose-800 font-semibold px-3 py-1.5 rounded-lg hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors cursor-pointer flex-shrink-0"
                 >
                   Remove
                 </button>
@@ -740,10 +773,10 @@ export default function InputPage() {
                   Extracted Resume Text (Review or refine if needed):
                 </label>
                 <textarea
-                  rows={6}
+                  rows={7}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  className="w-full border border-slate-300 rounded-xl p-3 text-xs text-slate-800 font-mono leading-relaxed"
+                  className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3.5 text-xs text-slate-800 font-mono leading-relaxed bg-slate-50/40"
                 />
               </div>
 
@@ -759,9 +792,9 @@ export default function InputPage() {
                   type="button"
                   onClick={handleSubmitUploadedResume}
                   disabled={isProcessingFile}
-                  className="inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
                 >
-                  <span>Continue</span>
+                  <span>Continue to Select Role</span>
                   <span>&rarr;</span>
                 </button>
               </div>
@@ -774,15 +807,15 @@ export default function InputPage() {
       {/* ACTIVE METHOD 3: GitHub Profile                                     */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {activeMethod === "github" && (
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
+        <div className="glass-panel-elevated rounded-2xl p-5 sm:p-6 shadow-md border border-slate-200/90">
           {!githubUser ? (
             <div>
               <div className="mb-4">
                 <h2 className="text-base sm:text-lg font-bold text-slate-900">
                   Import GitHub Profile
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                  Use public GitHub information (bio, public repositories, and languages) to build your technical resume. No login or password required.
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+                  Use public GitHub information (bio, public repositories, and languages) to build your technical resume. No password required.
                 </p>
               </div>
 
@@ -800,8 +833,8 @@ export default function InputPage() {
                         setGithubQuery(e.target.value);
                         if (errorMessage) setErrorMessage("");
                       }}
-                      placeholder="Enter your GitHub username (e.g. anuj123) or https://github.com/username"
-                      className="flex-1 border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                      placeholder="Enter GitHub username (e.g. anuj123) or https://github.com/username"
+                      className="flex-1 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                     />
                     <button
                       type="submit"
@@ -815,14 +848,14 @@ export default function InputPage() {
                         </>
                       ) : (
                         <>
-                          <span>Fetch GitHub Data</span>
+                          <span>Fetch Repos</span>
                           <span>&rarr;</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1.5">
-                    Example: <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-600">anuj123</code> or <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-600">https://github.com/username</code>
+                  <p className="text-[11px] text-slate-400 mt-2">
+                    Example: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-mono">anuj123</code> or <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-mono">https://github.com/username</code>
                   </p>
                 </div>
               </form>
@@ -853,7 +886,7 @@ export default function InputPage() {
               </div>
 
               {/* User Bio Card */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 sm:p-5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-extrabold text-slate-900 text-sm sm:text-base">
@@ -864,7 +897,7 @@ export default function InputPage() {
                     </span>
                   </div>
                   {githubUser.bio && (
-                    <p className="text-xs text-slate-700 mt-1">
+                    <p className="text-xs text-slate-700 mt-1 leading-relaxed">
                       {githubUser.bio}
                     </p>
                   )}
@@ -879,7 +912,7 @@ export default function InputPage() {
                   href={githubUser.html_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs flex-shrink-0"
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-2xs flex-shrink-0"
                 >
                   View on GitHub &rarr;
                 </a>
@@ -911,20 +944,20 @@ export default function InputPage() {
                 </div>
 
                 {githubRepos.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic p-3 bg-slate-50 rounded-lg">
+                  <p className="text-xs text-slate-500 italic p-3 bg-slate-50 rounded-xl">
                     No public repositories found for this user.
                   </p>
                 ) : (
-                  <div className="max-h-72 overflow-y-auto space-y-2 pr-1 border border-slate-200 rounded-xl p-2.5 bg-slate-50/50">
+                  <div className="max-h-72 overflow-y-auto space-y-2 pr-1 border border-slate-200/80 rounded-2xl p-3 bg-slate-50/50">
                     {githubRepos.map((repo) => {
                       const isChecked = selectedRepoIds.includes(repo.id);
                       return (
                         <label
                           key={repo.id}
-                          className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                          className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
                             isChecked
                               ? "bg-white border-blue-500 shadow-2xs"
-                              : "bg-white/60 border-slate-200 opacity-75 hover:opacity-100"
+                              : "bg-white/70 border-slate-200 opacity-75 hover:opacity-100"
                           }`}
                         >
                           <input
@@ -940,12 +973,12 @@ export default function InputPage() {
                               </span>
                               <div className="flex items-center gap-2 flex-shrink-0">
                                 {repo.language && (
-                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200/60">
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
                                     {repo.language}
                                   </span>
                                 )}
                                 {repo.stargazers_count > 0 && (
-                                  <span className="text-[10px] text-amber-600 font-medium">
+                                  <span className="text-[10px] text-amber-600 font-semibold">
                                     ★ {repo.stargazers_count}
                                   </span>
                                 )}
@@ -981,9 +1014,9 @@ export default function InputPage() {
                 <button
                   type="button"
                   onClick={handleContinueWithGithub}
-                  className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer"
                 >
-                  <span>Continue</span>
+                  <span>Continue to Select Role</span>
                   <span>&rarr;</span>
                 </button>
               </div>
@@ -996,25 +1029,25 @@ export default function InputPage() {
       {/* ACTIVE METHOD 4: LinkedIn Profile                                   */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {activeMethod === "linkedin" && (
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs">
+        <div className="glass-panel-elevated rounded-2xl p-5 sm:p-6 shadow-md border border-slate-200/90">
           <div className="mb-4">
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
               Add LinkedIn Information
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
               We do not scrape LinkedIn or ask for passwords. Choose either of the two simple methods below to provide your profile information:
             </p>
           </div>
 
           {/* Sub-tab selection between Paste and Upload PDF */}
-          <div className="flex border-b border-slate-200 mb-5">
+          <div className="flex border-b border-slate-200/90 mb-5 gap-2">
             <button
               type="button"
               onClick={() => {
                 setLinkedinTab("paste");
                 setErrorMessage("");
               }}
-              className={`pb-2.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+              className={`pb-2.5 px-3.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer ${
                 linkedinTab === "paste"
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-slate-500 hover:text-slate-800"
@@ -1028,7 +1061,7 @@ export default function InputPage() {
                 setLinkedinTab("upload");
                 setErrorMessage("");
               }}
-              className={`pb-2.5 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+              className={`pb-2.5 px-3.5 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer ${
                 linkedinTab === "upload"
                   ? "border-blue-600 text-blue-600"
                   : "border-transparent text-slate-500 hover:text-slate-800"
@@ -1049,7 +1082,7 @@ export default function InputPage() {
               </p>
               <textarea
                 id="linkedinTextInput"
-                rows={8}
+                rows={9}
                 value={linkedinText}
                 onChange={(e) => {
                   setLinkedinText(e.target.value);
@@ -1077,15 +1110,15 @@ Bachelor of Science - BS, Computer Science
 
 Skills:
 TypeScript · Next.js · Node.js · PostgreSQL"
-                className="w-full border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl p-3.5 text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:outline-none"
+                className="w-full border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl p-3.5 text-sm text-slate-900 leading-relaxed placeholder:text-slate-400 focus:outline-none"
               />
             </div>
           ) : (
             /* Method 2: Upload PDF */
             <div className="space-y-4">
-              <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-3.5 text-xs text-blue-800">
+              <div className="bg-blue-50/70 border border-blue-100 rounded-2xl p-4 text-xs text-blue-900 shadow-2xs">
                 <span className="font-bold">How to download your LinkedIn PDF:</span>
-                <ol className="list-decimal list-inside mt-1 space-y-0.5 text-blue-700">
+                <ol className="list-decimal list-inside mt-1.5 space-y-1 text-blue-800">
                   <li>Go to your LinkedIn profile in a browser.</li>
                   <li>Click the <strong>&quot;More&quot;</strong> button near your profile picture.</li>
                   <li>Select <strong>&quot;Save to PDF&quot;</strong> and upload the downloaded document below.</li>
@@ -1093,9 +1126,9 @@ TypeScript · Next.js · Node.js · PostgreSQL"
               </div>
 
               {!linkedinFileName ? (
-                <label className="group cursor-pointer border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50/60 hover:bg-blue-50/20 rounded-xl p-6 transition-all flex flex-col items-center justify-center text-center">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-200/70 flex items-center justify-center text-blue-600 mb-2 group-hover:scale-110 transition-transform">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <label className="group cursor-pointer border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/20 rounded-2xl p-8 transition-all flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-blue-600 mb-2.5 group-hover:scale-105 transition-transform shadow-2xs">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                   </div>
@@ -1103,7 +1136,7 @@ TypeScript · Next.js · Node.js · PostgreSQL"
                     Upload LinkedIn Profile / Resume PDF
                   </span>
                   <span className="text-xs text-slate-400 mt-1">
-                    Accepts .pdf document
+                    Accepts official LinkedIn exported .pdf document
                   </span>
                   <input
                     type="file"
@@ -1114,8 +1147,8 @@ TypeScript · Next.js · Node.js · PostgreSQL"
                 </label>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between bg-emerald-50/70 border border-emerald-200 rounded-xl p-3">
-                    <span className="text-xs font-semibold text-emerald-900 truncate">
+                  <div className="flex items-center justify-between bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-3.5 shadow-2xs">
+                    <span className="text-xs font-bold text-emerald-950 truncate">
                       📄 {linkedinFileName}
                     </span>
                     <button
@@ -1124,7 +1157,7 @@ TypeScript · Next.js · Node.js · PostgreSQL"
                         setLinkedinFileName("");
                         setLinkedinText("");
                       }}
-                      className="text-xs text-rose-600 hover:underline ml-2"
+                      className="text-xs text-rose-600 hover:underline ml-2 font-semibold"
                     >
                       Remove
                     </button>
@@ -1132,14 +1165,14 @@ TypeScript · Next.js · Node.js · PostgreSQL"
 
                   {/* Editable preview of extracted LinkedIn text */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                       Extracted LinkedIn Content (Review or edit below):
                     </label>
                     <textarea
-                      rows={6}
+                      rows={7}
                       value={linkedinText}
                       onChange={(e) => setLinkedinText(e.target.value)}
-                      className="w-full border border-slate-300 rounded-xl p-3 text-xs text-slate-800 font-mono leading-relaxed"
+                      className="w-full border border-slate-200 focus:border-blue-500 rounded-xl p-3.5 text-xs text-slate-800 font-mono leading-relaxed bg-slate-50/40"
                     />
                   </div>
                 </div>
@@ -1151,17 +1184,18 @@ TypeScript · Next.js · Node.js · PostgreSQL"
           <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-100">
             <Link
               href="/"
-              className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1"
             >
-              &larr; Back to Home
+              <span>&larr;</span>
+              <span>Back to Home</span>
             </Link>
             <button
               type="button"
               onClick={handleContinueWithLinkedin}
               disabled={isProcessingLinkedinPdf}
-              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-all shadow-xs cursor-pointer disabled:opacity-60"
             >
-              <span>Continue</span>
+              <span>Continue to Select Role</span>
               <span>&rarr;</span>
             </button>
           </div>

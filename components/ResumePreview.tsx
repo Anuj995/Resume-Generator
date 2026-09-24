@@ -111,19 +111,19 @@ export default function ResumePreview({ data, templateId }: ResumePreviewProps) 
   const isMinimal = activeTemplate === "clean";
 
   // Document container styles
-  let containerClasses = "bg-white text-black max-w-[800px] mx-auto text-left print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none ";
+  let containerClasses = "bg-white text-black max-w-[800px] w-full mx-auto text-left print:border-none print:shadow-none print:p-0 print:m-0 print:max-w-none transition-all ";
   if (isClassic) {
-    containerClasses += "font-serif p-8 sm:p-10 leading-relaxed border border-gray-200 rounded-lg shadow-sm";
+    containerClasses += "font-serif p-8 sm:p-10 leading-relaxed border border-slate-200/90 rounded-xl shadow-md";
   } else if (isModern) {
-    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border border-blue-100 rounded-lg shadow-sm";
+    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border border-blue-200/80 rounded-xl shadow-md";
   } else if (isExecutive) {
-    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border-t-4 border-t-teal-700 border-x border-b border-gray-200 rounded-lg shadow-sm";
+    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border-t-4 border-t-teal-700 border-x border-b border-slate-200/90 rounded-xl shadow-md";
   } else if (isCompact) {
-    containerClasses += "font-sans p-6 sm:p-7 leading-snug border border-indigo-100 rounded-lg shadow-sm";
+    containerClasses += "font-sans p-6 sm:p-7 leading-snug border border-indigo-200/80 rounded-xl shadow-md";
   } else if (isMinimal) {
-    containerClasses += "font-sans p-10 sm:p-12 leading-relaxed border border-gray-100 rounded-lg shadow-xs";
+    containerClasses += "font-sans p-10 sm:p-12 leading-relaxed border border-slate-200/70 rounded-xl shadow-md";
   } else {
-    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border border-gray-200 rounded-lg shadow-sm";
+    containerClasses += "font-sans p-8 sm:p-10 leading-relaxed border border-slate-200/90 rounded-xl shadow-md";
   }
 
   // Section heading style helper
