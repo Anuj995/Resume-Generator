@@ -60,9 +60,9 @@ export function hasResumeCache(): boolean {
 /**
  * Validates whether a specific step/route is unlocked and ready to visit based on completed inputs.
  */
-export function isStepUnlocked(step: "home" | "input" | "explore" | "role" | "templates" | "editor" | "preview" | "organize"): boolean {
+export function isStepUnlocked(step: "home" | "input" | "explore" | "role" | "templates" | "editor" | "preview" | "organize" | "ats-score"): boolean {
   if (typeof window === "undefined") return false;
-  if (step === "home" || step === "input" || step === "explore") return true;
+  if (step === "home" || step === "input" || step === "explore" || step === "ats-score") return true;
 
   const rawText = (localStorage.getItem("resume_raw_text") || "").trim();
   const hasValidInput = rawText.length >= 25;

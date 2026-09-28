@@ -83,6 +83,7 @@ export default function HomePage() {
           </Link>
         </motion.div>
 
+
         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
           <Link
             href="/explore"
@@ -92,6 +93,18 @@ export default function HomePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
             </svg>
             <span>Explore ATS Templates</span>
+          </Link>
+        </motion.div>
+
+        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+          <Link
+            href="/ats-score"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200/90 text-purple-800 font-semibold px-6 py-3.5 rounded-xl shadow-xs hover:shadow-md transition-all text-sm sm:text-base cursor-pointer"
+          >
+            <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Check ATS Score</span>
           </Link>
         </motion.div>
       </motion.div>
@@ -267,6 +280,67 @@ export default function HomePage() {
             </div>
           </motion.div>
         </motion.div>
+      </motion.div>
+
+      {/* ATS Score AI Promo Section */}
+      <motion.div
+        variants={itemVariants}
+        className="mt-16 border-t border-slate-200/80 pt-12"
+      >
+        <Link href="/ats-score" className="block group">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-8 sm:p-10 text-white shadow-xl hover:shadow-2xl transition-all duration-300">
+            {/* Decorative Glow Circles */}
+            <div className="absolute -right-16 -top-16 w-56 h-56 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-purple-400/20 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="flex-1 max-w-xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-xs font-bold uppercase tracking-wider mb-4">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  AI-Powered ATS Scoring
+                </div>
+
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+                  Know Your Resume&apos;s ATS Score Before You Apply
+                </h2>
+
+                <p className="mt-3 text-sm sm:text-base text-white/80 leading-relaxed max-w-lg">
+                  Our Gemini-powered auditor scans your resume the way applicant tracking systems do &mdash;
+                  rating keyword density, quantified impact, action verb strength, and structural clarity.
+                  Get instant fixes to beat the ATS filter.
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/20">
+                    📊 Score out of 100
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/20">
+                    🔑 Missing keyword detection
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/20">
+                    ⚡ Actionable quick fixes
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  ⚡
+                </div>
+              </div>
+            </div>
+
+            <div className="relative mt-6 pt-5 border-t border-white/15 flex items-center justify-between">
+              <span className="text-xs text-white/60">Upload any resume or use your active draft &mdash; results in seconds</span>
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-white group-hover:gap-2.5 transition-all">
+                Try ATS Score AI
+                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </span>
+            </div>
+          </div>
+        </Link>
       </motion.div>
     </motion.div>
   );

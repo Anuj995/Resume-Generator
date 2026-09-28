@@ -68,6 +68,7 @@ export default function Navbar() {
   // Micro progress percentage based on current funnel stage
   const progressPercent = useMemo(() => {
     if (pathname.startsWith("/preview")) return 100;
+    if (pathname.startsWith("/ats-score")) return 90;
     if (pathname.startsWith("/editor")) return 80;
     if (pathname.startsWith("/organize") || pathname.startsWith("/role")) return 60;
     if (pathname.startsWith("/input")) return 40;
@@ -212,27 +213,44 @@ export default function Navbar() {
                 })}
               </div>
 
-              {/* Action Button: New Resume with Shimmer Effect */}
-              <motion.button
-                whileHover={{ scale: 1.04, y: -1 }}
-                whileTap={{ scale: 0.96 }}
-                type="button"
-                onClick={handleNewResume}
-                className="relative group overflow-hidden ml-1 sm:ml-2 inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 text-white shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/35 transition-all cursor-pointer select-none"
-                title="Wipe cache and start a fresh resume"
-              >
-                {/* Micro Sheen Sweep */}
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform ease-out pointer-events-none" />
-                <svg
-                  className="w-3.5 h-3.5 transition-transform group-hover:rotate-90 duration-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {/* Action Buttons: ATS Score AI and New Resume */}
+              <div className="flex items-center gap-1.5 ml-1 sm:ml-2">
+                <Link
+                  href="/ats-score"
+                  className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all select-none ${
+                    isActive("/ats-score")
+                      ? "bg-purple-600 text-white shadow-sm shadow-purple-500/25 ring-2 ring-purple-300"
+                      : "bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 hover:border-purple-300 shadow-2xs"
+                  }`}
+                  title="Audit your resume with Gemini ATS scoring"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="hidden sm:inline">New Resume</span>
-              </motion.button>
+                  <span className="text-xs">⚡</span>
+                  <span className="hidden sm:inline">ATS Score AI</span>
+                  <span className="sm:hidden">ATS</span>
+                </Link>
+
+                {/* Action Button: New Resume with Shimmer Effect */}
+                <motion.button
+                  whileHover={{ scale: 1.04, y: -1 }}
+                  whileTap={{ scale: 0.96 }}
+                  type="button"
+                  onClick={handleNewResume}
+                  className="relative group overflow-hidden inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 text-white shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/35 transition-all cursor-pointer select-none"
+                  title="Wipe cache and start a fresh resume"
+                >
+                  {/* Micro Sheen Sweep */}
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform ease-out pointer-events-none" />
+                  <svg
+                    className="w-3.5 h-3.5 transition-transform group-hover:rotate-90 duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="hidden sm:inline">New Resume</span>
+                </motion.button>
+              </div>
             </div>
 
             {/* Bottom Subtle Journey Progress Track */}

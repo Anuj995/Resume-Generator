@@ -478,6 +478,15 @@ export default function EditorPage() {
           </button>
 
           <Link
+            href="/ats-score"
+            className="inline-flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 hover:border-purple-300 font-semibold text-xs sm:text-sm px-3.5 py-2.5 rounded-xl transition-all whitespace-nowrap"
+            title="Audit this resume draft with the ATS Rating Engine"
+          >
+            <span className="text-sm">⚡</span>
+            <span>Check ATS Score</span>
+          </Link>
+
+          <Link
             href="/preview"
             className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold text-xs sm:text-sm px-4.5 py-2.5 rounded-xl shadow-xs transition-all whitespace-nowrap"
           >

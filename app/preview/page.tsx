@@ -151,6 +151,17 @@ export default function PreviewPage() {
             <span>Edit Resume</span>
           </Link>
 
+          <Link
+            href="/ats-score"
+            className="text-xs sm:text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 hover:border-purple-300 font-semibold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5"
+            title="Scan your finalized resume with the ATS Score rating engine"
+          >
+            <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Check ATS Score</span>
+          </Link>
+
           <button
             onClick={handleWordDownload}
             disabled={wordLoading}
