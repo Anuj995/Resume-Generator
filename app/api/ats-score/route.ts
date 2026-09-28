@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import {
   analyzeLocalSignals,
@@ -6,8 +5,6 @@ import {
   generateLocalAtsRating,
   AtsRatingResult,
 } from "@/lib/atsScorer";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 const ATS_AUDITOR_SYSTEM = `You are an elite ATS (Applicant Tracking System) recruiter and parsing auditor.
 Evaluate resumes objectively for parsing accuracy, impact quantification, keyword alignment, and brevity.
@@ -40,7 +37,7 @@ export async function POST(req: NextRequest) {
     const localSignals = analyzeLocalSignals(cleanResume);
 
     // 2. Fallback to deterministic heuristic if API key is missing
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GROQ_API_KEY) {
       const fallbackResult = generateLocalAtsRating(cleanResume, targetRole || "", jobDescription || "");
       return NextResponse.json({
         ...fallbackResult,
@@ -55,16 +52,6 @@ export async function POST(req: NextRequest) {
     // Compact job description to max 700 chars (~150 tokens)
     const sanitizedJD = compactJobDescription(jobDescription || "");
     const cleanRole = (targetRole || "").trim().slice(0, 80);
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3.6-flash",
-      systemInstruction: ATS_AUDITOR_SYSTEM,
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.2,
-        maxOutputTokens: 480, // tight token budget
-      },
-    });
 
     const userPrompt = `TARGET ROLE: ${cleanRole || "General Industry Professional"}
 ${sanitizedJD ? `TARGET JD EXCERPT:\n${sanitizedJD}\n` : ""}
@@ -90,13 +77,34 @@ Return exact JSON:
   ]
 }`;
 
-    const result = await model.generateContent(userPrompt);
-    const responseText = result.response.text().trim();
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-20b",
+        messages: [
+          { role: "system", content: ATS_AUDITOR_SYSTEM },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" }
+      })
+    });
 
-    // Estimate input and output token count
-    const estimatedInputTokens = Math.round((userPrompt.length + ATS_AUDITOR_SYSTEM.length) / 4);
-    const estimatedOutputTokens = Math.round(responseText.length / 4);
-    const totalTokensUsed = estimatedInputTokens + estimatedOutputTokens;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Groq API error:", response.status, errorText);
+      throw new Error(`Groq API error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    const responseText = result.choices[0]?.message?.content || "{}";
+
+    // Estimate input and output token count (from Groq usage stats if available)
+    const totalTokensUsed = result.usage?.total_tokens || 0;
 
     try {
       const parsedData = JSON.parse(responseText);
